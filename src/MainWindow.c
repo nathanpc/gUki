@@ -9,6 +9,9 @@
 
 // Private variables.
 GtkWidget *window;
+GtkWidget *statusbar;
+GtkWidget *treeview;
+GtkWidget *pageeditor;
 GtkItemFactoryEntry menu_items[] = {
 	// File.
 	{ "/_File",                     NULL,             NULL,          0, "<Branch>",     NULL },
@@ -54,28 +57,49 @@ GtkItemFactoryEntry menu_items[] = {
 
 // Private methods.
 GtkWidget* initialize_menubar();
+GtkWidget* initialize_treeview();
+GtkWidget* initialize_page_editor();
 
 /**
  * Initializes the main window of the application.
  */
 void initialize_mainwindow() {
 	GtkWidget *vbox;
+	GtkWidget *hpaned;
 	GtkWidget *menubar;
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "gUki");
-	g_signal_connect(window, "destroy",
-					 G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	// Add vertical container to place the menu bar.
 	vbox = gtk_vbox_new(false, 1);
-	gtk_container_set_border_width (GTK_CONTAINER(vbox), 1);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 1);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 
 	// Initialize the menu bar.
 	menubar = initialize_menubar();
 	gtk_box_pack_start(GTK_BOX(vbox), menubar, false, true, 0);
+
+	// Add a horizontal panel.
+	hpaned = gtk_hpaned_new();
+	gtk_box_pack_start(GTK_BOX(vbox), hpaned, true, true, 0);
+
+	// Initialize the tree view.
+	treeview = initialize_treeview();
+	gtk_paned_add1(GTK_PANED(hpaned), treeview);
+
+	// Initialize the page editor.
+	pageeditor = initialize_page_editor();
+	gtk_paned_add2(GTK_PANED(hpaned), pageeditor);
+
+	// Initialize the status bar.
+	statusbar = gtk_statusbar_new();
+	gtk_statusbar_push(GTK_STATUSBAR(statusbar),
+	gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), "Welcome to gUki"),
+					   "Welcome to gUki");
+	gtk_box_pack_start(GTK_BOX(vbox), statusbar, false, true, 0);
 
 	// Show the window.
 	gtk_widget_show_all(window);
@@ -103,4 +127,50 @@ GtkWidget* initialize_menubar() {
 
 	// Generate the menu bar and return.
 	return gtk_item_factory_get_widget(item_factory, "<main>");
+}
+
+/**
+ * Initializes the tree view that will contain the articles and templates.
+ *
+ * @return Tree view widget to be populated.
+ */
+GtkWidget* initialize_treeview() {
+	GtkTreeViewColumn *col;
+	GtkCellRenderer *renderer;
+	GtkWidget *tview;
+	GtkTreeModel *model;
+
+	// Create tree view.
+	tview = gtk_tree_view_new();
+
+	// Create the only column
+	col = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(col, "Workspace");
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tview), col);
+
+	// Create the cell renderer.
+	renderer = gtk_cell_renderer_text_new();
+	gtk_tree_view_column_pack_start(col, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(col, renderer, "text", 0);
+
+	/*model = create_and_fill_model();
+	gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+	g_object_unref(model);*/
+
+	return tview;
+}
+
+/**
+ * Initializes the page editor (GtkTextView) control.
+ *
+ * @return The GtkTextView control.
+ */
+GtkWidget* initialize_page_editor() {
+	GtkWidget *editor;
+
+	// Create and setup editor.
+	editor = gtk_text_view_new();
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor), GTK_WRAP_WORD);
+
+	return editor;
 }
