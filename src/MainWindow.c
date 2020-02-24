@@ -6,6 +6,7 @@
  */
 
 #include "MainWindow.h"
+#include "Workspace.h"
 
 // Private variables.
 GtkWidget *window;
@@ -101,6 +102,9 @@ void initialize_mainwindow() {
 					   "Welcome to gUki");
 	gtk_box_pack_start(GTK_BOX(vbox), statusbar, false, true, 0);
 
+	// Initialize the workspace.
+	initialize_workspace(treeview);
+
 	// Show the window.
 	gtk_widget_show_all(window);
 }
@@ -135,10 +139,9 @@ GtkWidget* initialize_menubar() {
  * @return Tree view widget to be populated.
  */
 GtkWidget* initialize_treeview() {
+	GtkWidget *tview;
 	GtkTreeViewColumn *col;
 	GtkCellRenderer *renderer;
-	GtkWidget *tview;
-	GtkTreeModel *model;
 
 	// Create tree view.
 	tview = gtk_tree_view_new();
@@ -152,10 +155,6 @@ GtkWidget* initialize_treeview() {
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(col, renderer, TRUE);
 	gtk_tree_view_column_add_attribute(col, renderer, "text", 0);
-
-	/*model = create_and_fill_model();
-	gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-	g_object_unref(model);*/
 
 	return tview;
 }

@@ -11,6 +11,7 @@
 #include <uki/uki.h>
 #include <gtk/gtk.h>
 #include "MainWindow.h"
+#include "Workspace.h"
 
 // Global variables.
 const char *wiki_root = "../TestUki/";
@@ -39,6 +40,9 @@ int main(int argc, char **argv) {
 	// Initialize GTK and the main window.
 	gtk_init(&argc, &argv);
 	initialize_mainwindow();
+
+	// Populate with data.
+	populate_workspace_treeview();
 
 	// Enter the GTK main loop.
 	gtk_main();
