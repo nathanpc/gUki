@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.0)
 # Setup the project.
 project(gUki VERSION 1.0.0 LANGUAGES C)
 set(CMAKE_BUILD_TYPE Debug)
-add_compile_options(-Wall -Wextra -pedantic)
+add_compile_options(-Wall -Wextra -pedantic -Wno-deprecated-declarations)
 
 # Setup GTK.
 find_package(PkgConfig REQUIRED)
@@ -20,8 +20,8 @@ include_directories(${GTK_INCLUDE_DIRS})
 file(GLOB SOURCES "src/*.c")
 
 # Setup link and include paths.
-include_directories(${CMAKE_SOURCE_DIR}/../uki/build/install/include)
-link_directories(${CMAKE_SOURCE_DIR}/../uki/build/install/lib)
+include_directories(${CMAKE_SOURCE_DIR}/../libuki/build/install/include)
+link_directories(${CMAKE_SOURCE_DIR}/../libuki/build/install/lib)
 
 # Build our executable.
 add_executable(${PROJECT_NAME} ${SOURCES})

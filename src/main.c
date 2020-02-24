@@ -1,6 +1,6 @@
 /**
- * uki
- * A command-line implementation of the uki personal wiki engine.
+ * gUki
+ * A GTK+ implementation of the Uki personal wiki engine.
  *
  * @author Nathan Campos <hi@nathancampos.me>
  */
@@ -10,6 +10,7 @@
 #include <string.h>
 #include <uki/uki.h>
 #include <gtk/gtk.h>
+#include "MainWindow.h"
 
 // Global variables.
 const char *wiki_root = "../TestUki/";
@@ -26,7 +27,6 @@ const char *wiki_page = "TestHTML";
  */
 int main(int argc, char **argv) {
 	int uki_error;
-	GtkWidget *window;
 
 	// Initialize the uki wiki.
 	if ((uki_error = uki_initialize(wiki_root)) != UKI_OK) {
@@ -36,15 +36,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	// Do GTK.
+	// Initialize GTK and the main window.
 	gtk_init(&argc, &argv);
+	initialize_mainwindow();
 
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_widget_show(window);
-
-	g_signal_connect(window, "destroy",
-					 G_CALLBACK(gtk_main_quit), NULL);
-
+	// Enter the GTK main loop.
 	gtk_main();
 
 	// Clean up and return.
