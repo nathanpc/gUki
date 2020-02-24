@@ -9,17 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <uki/uki.h>
+#include <gtk/gtk.h>
 
 // Global variables.
 const char *wiki_root = "../TestUki/";
 const char *wiki_page = "TestHTML";
 
 // Private methods.
-void usage();
-void print_variables();
-void print_templates_list();
-void print_articles_list();
-void print_articles_tree();
 
 /**
  * Application's main entry point.
@@ -28,8 +24,9 @@ void print_articles_tree();
  * @param  argv Array of command-line arguments.
  * @return      Return code.
  */
-int main(const int argc, const char **argv) {
+int main(int argc, char **argv) {
 	int uki_error;
+	GtkWidget *window;
 
 	// Initialize the uki wiki.
 	if ((uki_error = uki_initialize(wiki_root)) != UKI_OK) {
@@ -39,124 +36,18 @@ int main(const int argc, const char **argv) {
 		return 1;
 	}
 
-	// Print our current state.
-	print_variables();
-	print_templates_list();
-	print_articles_list();
+	// Do GTK.
+	gtk_init(&argc, &argv);
 
-	// Render a page.
-	char *content;
-	if ((uki_error = uki_render_page(&content, wiki_page)) != UKI_OK) {
-		fprintf(stderr, "ERROR: %s", uki_error_msg(uki_error));
-		uki_clean();
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_widget_show(window);
 
-		return 1;
-	}
+	g_signal_connect(window, "destroy",
+					 G_CALLBACK(gtk_main_quit), NULL);
 
-	// Print the page content.
-	printf("%s\n", content);
-
-	// Print articles tree.
-	print_articles_tree();
+	gtk_main();
 
 	// Clean up and return.
 	uki_clean();
 	return 0;
-}
-
-/**
- * Prints the configurations.
- */
-void print_variables() {
-	// Print configurations.
-	printf("Configurations:\n");
-	for (size_t i = 0; i < uki_configs_available(); i++) {
-		uki_variable_t var = uki_config(i);
-		printf("   %s <- %s\n", var.key, var.value);
-	}
-	printf("\n");
-
-	// Print variables.
-	printf("Variables:\n");
-	for (size_t i = 0; i < uki_variables_available(); i++) {
-		uki_variable_t var = uki_variable(i);
-		printf("   %s <- %s\n", var.key, var.value);
-	}
-	printf("\n");
-}
-
-/**
- * Prints an articles tree.
- */
-void print_articles_tree() {
-	char lastparent[UKI_MAX_PATH];
-	lastparent[0] = '\0';
-
-	// TODO: Make this able to traverse directories of any deepness.
-
-	printf("Directory Tree:\n");
-	for (size_t i = 0; i < uki_articles_available(); i++) {
-		uki_article_t article = uki_article(i);
-
-		if (article.parent != NULL) {
-			if (strcmp(lastparent, article.parent) != 0) {
-				strcpy(lastparent, article.parent);
-				printf("   %s\n", lastparent);
-			}
-		} else {
-			if (lastparent[0] != '\0') {
-				lastparent[0] = '\0';
-			}
-		}
-
-		if (article.deepness > 0) {
-			printf("      ");
-		} else {
-			printf("   ");
-		}
-
-		printf("%s\n", article.name);
-	}
-
-	printf("\n");
-}
-
-/**
- * Prints a list of the templates.
- */
-void print_templates_list() {
-	printf("Templates:\n");
-
-	for (size_t i = 0; i < uki_templates_available(); i++) {
-		uki_template_t template = uki_template(i);
-		char fpath[UKI_MAX_PATH];
-
-		printf("   %d %s  |  %s <- %s\n", template.deepness, template.parent,
-			   template.path, template.name);
-
-		uki_template_fpath(fpath, template);
-		printf("      +--> %s\n", fpath);
-	}
-
-	printf("\n");
-}
-
-/**
- * Prints a list of the articles.
- */
-void print_articles_list() {
-	printf("Articles:\n");
-
-	for (size_t i = 0; i < uki_articles_available(); i++) {
-		uki_article_t article = uki_article(i);
-		char fpath[UKI_MAX_PATH];
-
-		printf("   %d %s  |  %s <- %s\n", article.deepness, article.parent,
-			   article.path, article.name);
-
-		uki_article_fpath(fpath, article);
-		printf("      --> %s\n", fpath);
-	}
-
-	printf("\n");
 }
