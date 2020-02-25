@@ -14,7 +14,7 @@
 #include "Workspace.h"
 
 // Global variables.
-const char *wiki_root = "../TestUki/";
+const char *wiki_root = "/home/nathan/dev/projects/uki/gUki/TestUki/";
 const char *wiki_page = "TestHTML";
 
 // Private methods.

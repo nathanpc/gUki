@@ -5,6 +5,7 @@
  * @author: Nathan Campos <hi@nathancampos.me>
  */
 
+#include <webkit/webkit.h>
 #include <uki/uki.h>
 #include "MainWindow.h"
 #include "DialogHelper.h"
@@ -15,6 +16,7 @@ GtkWidget *window;
 GtkWidget *statusbar;
 GtkWidget *treeview;
 GtkWidget *pageeditor;
+GtkWidget *pageviewer;
 GtkItemFactoryEntry menu_items[] = {
 	// File.
 	{ "/_File",                     NULL,             NULL,          0, "<Branch>",     NULL },
@@ -64,6 +66,7 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
 GtkWidget* initialize_page_editor();
+GtkWidget* initialize_page_viewer();
 GtkWidget* initialize_notebook(GtkWidget *editor_container,
 							   GtkWidget *viewer_container);
 
@@ -124,10 +127,12 @@ void initialize_mainwindow() {
 								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scleditor),
 										GTK_SHADOW_ETCHED_IN);
-	// TODO: Add scleditor to notebook page.
+
+	// Initialize page viewer.
+	pageviewer = initialize_page_viewer();
 
 	// Initialize the notebook that will hold the page viewer and editor.
-	notebook = initialize_notebook(scleditor, gtk_button_new_with_label("close"));
+	notebook = initialize_notebook(scleditor, pageviewer);
 	gtk_paned_add2(GTK_PANED(hpaned), notebook);
 
 	// Initialize the status bar.
@@ -339,6 +344,20 @@ GtkWidget* initialize_page_editor() {
 }
 
 /**
+ * Initializes the page viewer (WebKitGTK) widget.
+ *
+ * @return The WebKitGTK widget.
+ */
+GtkWidget* initialize_page_viewer() {
+	GtkWidget *webview;
+
+	// Initialize web viewer.
+	webview = webkit_web_view_new();
+
+	return webview;
+}
+
+/**
  * Loads the contents of a file to the page editor and viewer.
  *
  * @param  fpath Path to the file to be read.
@@ -348,6 +367,7 @@ bool load_file(const gchar *fpath) {
 	GtkTextBuffer *buffer;
 	GError *err;
 	char *contents;
+	char uri[UKI_MAX_PATH + 11];
 
 	// Read contents.
 	if (!g_file_get_contents(fpath, &contents, NULL, &err)) {
@@ -357,9 +377,16 @@ bool load_file(const gchar *fpath) {
 		return false;
 	}
 
-	// Get page editor buffer.
+	// Get page editor buffer and set its contents.
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(pageeditor));
 	gtk_text_buffer_set_text(buffer, contents, -1);
+
+	// Load the file into the web view.
+	sprintf(uri, "file://%s", fpath);
+	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(pageviewer), uri);
+
+	// TODO: Look into using webkit_web_view_load_string(), so that we can maybe
+	//       set an assets directory as the base URI.
 
 	// Free resources.
 	g_free(contents);
