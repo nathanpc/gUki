@@ -11,8 +11,10 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 
-// Initialization.
+// Initialization and destruction.
 void initialize_workspace(GtkWidget *tview);
+void close_workspace();
+bool open_workspace(const char *wiki_root);
 
 // TreeView Population.
 void populate_workspace_treeview();
