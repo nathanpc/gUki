@@ -64,6 +64,8 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
 GtkWidget* initialize_page_editor();
+GtkWidget* initialize_notebook(GtkWidget *editor_container,
+							   GtkWidget *viewer_container);
 
 /**
  * Initializes the main window of the application.
@@ -74,6 +76,7 @@ void initialize_mainwindow() {
 	GtkWidget *hpaned;
 	GtkWidget *scltree;
 	GtkWidget *scleditor;
+	GtkWidget *notebook;
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -121,7 +124,11 @@ void initialize_mainwindow() {
 								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scleditor),
 										GTK_SHADOW_ETCHED_IN);
-	gtk_paned_add2(GTK_PANED(hpaned), scleditor);
+	// TODO: Add scleditor to notebook page.
+
+	// Initialize the notebook that will hold the page viewer and editor.
+	notebook = initialize_notebook(scleditor, gtk_button_new_with_label("close"));
+	gtk_paned_add2(GTK_PANED(hpaned), notebook);
 
 	// Initialize the status bar.
 	statusbar = gtk_statusbar_new();
@@ -284,6 +291,36 @@ GtkWidget* initialize_treeview() {
 					 G_CALLBACK(on_treeview_selection_changed), NULL);
 
 	return tview;
+}
+
+/**
+ * Initializes the notebook widget that will hold the page editor and viewer.
+ *
+ * @param  editor_container Widget that contains the page editor.
+ * @param  viewer_container Widget that contains the page viewer.
+ * @return                  The GtkNotebook widget.
+ */
+GtkWidget* initialize_notebook(GtkWidget *editor_container,
+							   GtkWidget *viewer_container) {
+	GtkWidget *notebook;
+	GtkWidget *lblview;
+	GtkWidget *lbledit;
+
+	// Initialize the notebook widget.
+	notebook = gtk_notebook_new();
+    gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
+
+	// Set the labels.
+	lblview = gtk_label_new("Viewer");
+	lbledit = gtk_label_new("Editor");
+
+	// Append widgets to the notebook.
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), viewer_container, lblview);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), editor_container, lbledit);
+
+	// Set current page to be the first one and return.
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
+	return notebook;
 }
 
 /**
