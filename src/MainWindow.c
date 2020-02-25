@@ -66,12 +66,15 @@ GtkWidget* initialize_page_editor();
  */
 void initialize_mainwindow() {
 	GtkWidget *vbox;
-	GtkWidget *hpaned;
 	GtkWidget *menubar;
+	GtkWidget *hpaned;
+	GtkWidget *sclwindow;
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "gUki");
+	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	gtk_widget_set_size_request(window, 700, 500);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	// Add vertical container to place the menu bar.
@@ -89,7 +92,16 @@ void initialize_mainwindow() {
 
 	// Initialize the tree view.
 	treeview = initialize_treeview();
-	gtk_paned_add1(GTK_PANED(hpaned), treeview);
+	gtk_widget_set_size_request(treeview, 200, -1);
+
+	// Initialize the scrolled window that will contain the tree view.
+	sclwindow = gtk_scrolled_window_new(NULL, NULL);
+	gtk_container_add(GTK_CONTAINER(sclwindow), treeview);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sclwindow),
+								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sclwindow),
+										GTK_SHADOW_ETCHED_IN);
+	gtk_paned_add1(GTK_PANED(hpaned), sclwindow);
 
 	// Initialize the page editor.
 	pageeditor = initialize_page_editor();
@@ -145,6 +157,7 @@ GtkWidget* initialize_treeview() {
 
 	// Create tree view.
 	tview = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tview), false);
 
 	// Create the only column
 	col = gtk_tree_view_column_new();
