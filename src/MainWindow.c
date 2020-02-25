@@ -5,7 +5,9 @@
  * @author: Nathan Campos <hi@nathancampos.me>
  */
 
+#include <uki/uki.h>
 #include "MainWindow.h"
+#include "DialogHelper.h"
 #include "Workspace.h"
 
 // Private variables.
@@ -57,6 +59,7 @@ GtkItemFactoryEntry menu_items[] = {
 };
 
 // Private methods.
+bool load_file(const gchar *fpath);
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
@@ -77,6 +80,9 @@ void initialize_mainwindow() {
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_widget_set_size_request(window, 700, 500);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+	// Initialize dialogs.
+	initialize_dialogs(window);
 
 	// Add vertical container to place the menu bar.
 	vbox = gtk_vbox_new(false, 1);
@@ -123,6 +129,66 @@ void initialize_mainwindow() {
 }
 
 /**
+ * Loads an article to the page editor and viewer by its index.
+ *
+ * @param  index Article index.
+ * @return       TRUE if the operation was successful.
+ */
+bool load_article(const gint index) {
+	uki_article_t article;
+	char fpath[UKI_MAX_PATH];
+	int err;
+
+	// Get the article.
+	article = uki_article((size_t)index);
+	if (article.name == NULL) {
+		error_dialog("Unable to Find Article", "Article with index %d not "
+					 "found.", index);
+		return false;
+	}
+
+	// Get the file path.
+	if ((err = uki_article_fpath(fpath, article)) != UKI_OK) {
+		error_dialog("Path Error", "Unable to find path for article '%s'.",
+					 article.name);
+		return false;
+	}
+
+	// Load file contents.
+	return load_file(fpath);
+}
+
+/**
+ * Loads a template to the page editor and viewer by its index.
+ *
+ * @param  index Article index.
+ * @return       TRUE if the operation was successful.
+ */
+bool load_template(const gint index) {
+	uki_template_t template;
+	char fpath[UKI_MAX_PATH];
+	int err;
+
+	// Get the template.
+	template = uki_template((size_t)index);
+	if (template.name == NULL) {
+		error_dialog("Unable to Find Template", "Template with index %d not "
+					 "found.", index);
+		return false;
+	}
+
+	// Get the file path.
+	if ((err = uki_template_fpath(fpath, template)) != UKI_OK) {
+		error_dialog("Path Error", "Unable to find path for template '%s'.",
+					 template.name);
+		return false;
+	}
+
+	// Load file contents.
+	return load_file(fpath);
+}
+
+/**
  * Callback for the tree view selection changed signal.
  *
  * @param widget        The widget that received the signal.
@@ -144,10 +210,10 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
 		// Check for the type of selection.
 		switch (type) {
 		case ROW_TYPE_ARTICLE:
-			g_print("Article #%d selected.\n", index);
+			load_article(index);
 			break;
 		case ROW_TYPE_TEMPLATE:
-			g_print("Template #%d selected.\n", index);
+			load_template(index);
 			break;
 		}
 	}
@@ -224,4 +290,32 @@ GtkWidget* initialize_page_editor() {
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor), GTK_WRAP_WORD);
 
 	return editor;
+}
+
+/**
+ * Loads the contents of a file to the page editor and viewer.
+ *
+ * @param  fpath Path to the file to be read.
+ * @return       TRUE if the operation was successful.
+ */
+bool load_file(const gchar *fpath) {
+	GtkTextBuffer *buffer;
+	GError *err;
+	char *contents;
+
+	// Read contents.
+	if (!g_file_get_contents(fpath, &contents, NULL, &err)) {
+		// TODO: Use GError.
+		error_dialog("Article Reading Error", "Failed to read the file '%s'.",
+					 fpath);
+		return false;
+	}
+
+	// Get page editor buffer.
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(pageeditor));
+	gtk_text_buffer_set_text(buffer, contents, -1);
+
+	// Free resources.
+	g_free(contents);
+	return true;
 }

@@ -7,6 +7,7 @@
 
 #include <uki/uki.h>
 #include "Workspace.h"
+#include "DialogHelper.h"
 
 // Private variables.
 GtkWidget *treeview;
@@ -36,8 +37,7 @@ bool open_workspace(const char *wiki_root) {
 
 	// Initialize the uki wiki.
 	if ((err = uki_initialize(wiki_root)) != UKI_OK) {
-		// TODO: Show a dialog.
-		fprintf(stderr, uki_error_msg(err));
+		error_dialog("Error While Initializing Workspace", uki_error_msg(err));
 		close_workspace();
 
 		return false;
