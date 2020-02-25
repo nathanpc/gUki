@@ -72,7 +72,8 @@ void initialize_mainwindow() {
 	GtkWidget *vbox;
 	GtkWidget *menubar;
 	GtkWidget *hpaned;
-	GtkWidget *sclwindow;
+	GtkWidget *scltree;
+	GtkWidget *scleditor;
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -102,17 +103,25 @@ void initialize_mainwindow() {
 	gtk_widget_set_size_request(treeview, 200, -1);
 
 	// Initialize the scrolled window that will contain the tree view.
-	sclwindow = gtk_scrolled_window_new(NULL, NULL);
-	gtk_container_add(GTK_CONTAINER(sclwindow), treeview);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sclwindow),
+	scltree = gtk_scrolled_window_new(NULL, NULL);
+	gtk_container_add(GTK_CONTAINER(scltree), treeview);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scltree),
 								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sclwindow),
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scltree),
 										GTK_SHADOW_ETCHED_IN);
-	gtk_paned_add1(GTK_PANED(hpaned), sclwindow);
+	gtk_paned_add1(GTK_PANED(hpaned), scltree);
 
 	// Initialize the page editor.
 	pageeditor = initialize_page_editor();
-	gtk_paned_add2(GTK_PANED(hpaned), pageeditor);
+
+	// Initialize the scrolled window that will contain the page editor.
+	scleditor = gtk_scrolled_window_new(NULL, NULL);
+	gtk_container_add(GTK_CONTAINER(scleditor), pageeditor);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scleditor),
+								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scleditor),
+										GTK_SHADOW_ETCHED_IN);
+	gtk_paned_add2(GTK_PANED(hpaned), scleditor);
 
 	// Initialize the status bar.
 	statusbar = gtk_statusbar_new();
