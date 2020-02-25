@@ -68,7 +68,8 @@ void populate_workspace_treeview() {
 	GtkTreeModel *model;
 
 	// Create tree view store.
-	store = gtk_tree_store_new(1, G_TYPE_STRING);
+	store = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_INT,
+							   G_TYPE_CHAR);
 
 	// Populate the tree view.
 	workspace_populate_articles(store);
@@ -94,7 +95,8 @@ void workspace_populate_articles(GtkTreeStore *store) {
 
 	// Create articles root node.
 	gtk_tree_store_append(store, &root, NULL);
-	gtk_tree_store_set(store, &root, 0, "Articles", -1);
+	gtk_tree_store_set(store, &root, COL_NAME, "Articles", COL_INDEX, -1,
+					   COL_TYPE, ROW_TYPE_TITLE, -1);
 
 	// Go through articles.
 	for (size_t i = 0; i < uki_articles_available(); i++) {
@@ -102,7 +104,8 @@ void workspace_populate_articles(GtkTreeStore *store) {
 
 		// Append as a child of articles.
 		gtk_tree_store_append(store, &child, &root);
-		gtk_tree_store_set(store, &child, 0, article.name, -1);
+		gtk_tree_store_set(store, &child, COL_NAME, article.name, COL_INDEX, i,
+						   COL_TYPE, ROW_TYPE_ARTICLE, -1);
 	}
 }
 
@@ -117,7 +120,8 @@ void workspace_populate_templates(GtkTreeStore *store) {
 
 	// Create templates root node.
 	gtk_tree_store_append(store, &root, NULL);
-	gtk_tree_store_set(store, &root, 0, "Templates", -1);
+	gtk_tree_store_set(store, &root, COL_NAME, "Templates", COL_INDEX, -1,
+					   COL_TYPE, ROW_TYPE_TITLE, -1);
 
 	// Go through articles.
 	for (size_t i = 0; i < uki_templates_available(); i++) {
@@ -125,7 +129,8 @@ void workspace_populate_templates(GtkTreeStore *store) {
 
 		// Append as a child of articles.
 		gtk_tree_store_append(store, &child, &root);
-		gtk_tree_store_set(store, &child, 0, template.name, -1);
+		gtk_tree_store_set(store, &child, COL_NAME, template.name, COL_INDEX, i,
+						   COL_TYPE, ROW_TYPE_TEMPLATE, -1);
 	}
 }
 

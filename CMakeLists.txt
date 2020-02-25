@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.0)
 # Setup the project.
 project(gUki VERSION 1.0.0 LANGUAGES C)
 set(CMAKE_BUILD_TYPE Debug)
-add_compile_options(-Wall -Wextra -pedantic -Wno-deprecated-declarations)
+add_compile_options(-Wall -Wextra -pedantic -Wno-deprecated-declarations -Wno-unused-parameter)
 
 # Setup GTK.
 find_package(PkgConfig REQUIRED)

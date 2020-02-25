@@ -57,6 +57,7 @@ GtkItemFactoryEntry menu_items[] = {
 };
 
 // Private methods.
+void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
 GtkWidget* initialize_page_editor();
@@ -122,6 +123,37 @@ void initialize_mainwindow() {
 }
 
 /**
+ * Callback for the tree view selection changed signal.
+ *
+ * @param widget        The widget that received the signal.
+ * @param callback_data Data passed to us by the signal connector.
+ */
+void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	GtkTreeSelection *selection;
+
+	selection = GTK_TREE_SELECTION(widget);
+	if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		gint index;
+		gchar type;
+
+		// Get the important values from the selection.
+		gtk_tree_model_get(model, &iter, COL_INDEX, &index, COL_TYPE, &type, -1);
+
+		// Check for the type of selection.
+		switch (type) {
+		case ROW_TYPE_ARTICLE:
+			g_print("Article #%d selected.\n", index);
+			break;
+		case ROW_TYPE_TEMPLATE:
+			g_print("Template #%d selected.\n", index);
+			break;
+		}
+	}
+}
+
+/**
  * Initializes the menu bar.
  *
  * @return Menu bar widget already populated.
@@ -152,22 +184,29 @@ GtkWidget* initialize_menubar() {
  */
 GtkWidget* initialize_treeview() {
 	GtkWidget *tview;
-	GtkTreeViewColumn *col;
+	GtkTreeViewColumn *mcol;
 	GtkCellRenderer *renderer;
+	GtkTreeSelection *selection;
 
 	// Create tree view.
 	tview = gtk_tree_view_new();
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tview), false);
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tview));
+	gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
 
-	// Create the only column
-	col = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(col, "Workspace");
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tview), col);
+	// Create the main column
+	mcol = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(mcol, "Workspace");
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tview), mcol);
 
 	// Create the cell renderer.
 	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_column_pack_start(col, renderer, TRUE);
-	gtk_tree_view_column_add_attribute(col, renderer, "text", 0);
+	gtk_tree_view_column_pack_start(mcol, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(mcol, renderer, "text", 0);
+
+	// Set the callback for the selection change signal.
+	g_signal_connect(selection, "changed",
+					 G_CALLBACK(on_treeview_selection_changed), NULL);
 
 	return tview;
 }
