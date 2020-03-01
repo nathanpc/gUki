@@ -15,9 +15,6 @@
 
 // Global variables.
 const char *wiki_root = "/home/nathan/dev/projects/uki/gUki/TestUki/";
-const char *wiki_page = "TestHTML";
-
-// Private methods.
 
 /**
  * Application's main entry point.

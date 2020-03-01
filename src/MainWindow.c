@@ -11,6 +11,9 @@
 #include "DialogHelper.h"
 #include "Workspace.h"
 
+// Constants.
+#define MAX_URI UKI_MAX_PATH + 11
+
 // Private variables.
 GtkWidget *window;
 GtkWidget *statusbar;
@@ -61,7 +64,7 @@ GtkItemFactoryEntry menu_items[] = {
 };
 
 // Private methods.
-bool load_file(const gchar *fpath);
+bool load_file(const gchar *fpath, const gint article_index);
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
@@ -176,7 +179,7 @@ bool load_article(const gint index) {
 	}
 
 	// Load file contents.
-	return load_file(fpath);
+	return load_file(fpath, index);
 }
 
 /**
@@ -206,7 +209,7 @@ bool load_template(const gint index) {
 	}
 
 	// Load file contents.
-	return load_file(fpath);
+	return load_file(fpath, -1);
 }
 
 /**
@@ -360,14 +363,15 @@ GtkWidget* initialize_page_viewer() {
 /**
  * Loads the contents of a file to the page editor and viewer.
  *
- * @param  fpath Path to the file to be read.
- * @return       TRUE if the operation was successful.
+ * @param  fpath         Path to the file to be read.
+ * @param  article_index Article index if it is an article.
+ * @return               TRUE if the operation was successful.
  */
-bool load_file(const gchar *fpath) {
+bool load_file(const gchar *fpath, const gint article_index) {
 	GtkTextBuffer *buffer;
 	GError *err;
 	char *contents;
-	char uri[UKI_MAX_PATH + 11];
+	char uri[MAX_URI];
 
 	// Read contents.
 	if (!g_file_get_contents(fpath, &contents, NULL, &err)) {
@@ -382,11 +386,20 @@ bool load_file(const gchar *fpath) {
 	gtk_text_buffer_set_text(buffer, contents, -1);
 
 	// Load the file into the web view.
-	sprintf(uri, "file://%s", fpath);
-	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(pageviewer), uri);
+	snprintf(uri, MAX_URI, "file://%s", fpath);
+	if (article_index < 0) {
+		webkit_web_view_load_uri(WEBKIT_WEB_VIEW(pageviewer), uri);
+	} else {
+		uki_article_t article;
 
-	// TODO: Look into using webkit_web_view_load_string(), so that we can maybe
-	//       set an assets directory as the base URI.
+		// Get article.
+		article = uki_article((size_t)article_index);
+
+		// Render the page.
+		uki_render_article_from_text(&contents, article.deepness);
+		webkit_web_view_load_string(WEBKIT_WEB_VIEW(pageviewer), contents, NULL,
+									NULL, uri);
+	}
 
 	// Free resources.
 	g_free(contents);
