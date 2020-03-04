@@ -24,11 +24,11 @@ const char *wiki_root = "/home/nathan/dev/projects/uki/gUki/TestUki/";
  * @return      Return code.
  */
 int main(int argc, char **argv) {
-	int uki_error;
+	uki_error uki_err;
 
 	// Initialize the uki wiki.
-	if ((uki_error = uki_initialize(wiki_root)) != UKI_OK) {
-		fprintf(stderr, uki_error_msg(uki_error));
+	if ((uki_err = uki_initialize(wiki_root)) != UKI_OK) {
+		fprintf(stderr, uki_error_msg(uki_err));
 		uki_clean();
 
 		return 1;

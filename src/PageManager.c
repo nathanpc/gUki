@@ -175,7 +175,7 @@ bool load_file() {
 	GtkTextBuffer *buffer;
 	GError *g_err;
 	char *contents;
-	int uki_err;
+	uki_error uki_err;
 	char fpath[UKI_MAX_PATH];
 	uki_article_t article;
 	uki_template_t template;

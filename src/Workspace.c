@@ -33,7 +33,7 @@ void initialize_workspace(GtkWidget *tview) {
  * @return           TRUE if the operation was successful.
  */
 bool open_workspace(const char *wiki_root) {
-	int err;
+	uki_error err;
 
 	// Initialize the uki wiki.
 	if ((err = uki_initialize(wiki_root)) != UKI_OK) {
