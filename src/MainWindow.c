@@ -15,47 +15,53 @@
 GtkWidget *window;
 GtkWidget *statusbar;
 GtkWidget *treeview;
+GtkWidget *notebook;
+
+// Menu items and callbacks.
+void show_page_viewer(GtkWidget *widget, gpointer data);
+void show_page_editor(GtkWidget *widget, gpointer data);
+void toggle_notebook_page(GtkWidget *widget, gpointer data);
 GtkItemFactoryEntry menu_items[] = {
 	// File.
-	{ "/_File",                     NULL,             NULL,          0, "<Branch>",     NULL },
-	{ "/File/_New",                 NULL,             NULL,          0, "<Branch>",     NULL },
-	{ "/File/New/_Article...",      "<CTRL>N",        NULL,          0, "<StockItem>",  GTK_STOCK_NEW },
-	{ "/File/New/_Template...",     NULL,             NULL,          0, "<Item>",       NULL },
-	{ "/File/sep1",                 NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/File/_Open Workspace...",   "<CTRL>O",        NULL,          0, "<StockItem>",  GTK_STOCK_OPEN },
-	{ "/File/_Refresh Workspace",   "<CTRL>R",        NULL,          0, "<StockItem>",  GTK_STOCK_REFRESH },
-	{ "/File/_Close Workspace",     "<CTRL>W",        NULL,          0, "<StockItem>",  GTK_STOCK_CLOSE },
-	{ "/File/sep2",                 NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/File/_Save",                "<CTRL>S",        NULL,          0, "<StockItem>",  GTK_STOCK_SAVE },
-	{ "/File/Save _As...",          NULL,             NULL,          0, "<StockItem>",  GTK_STOCK_SAVE_AS },
-	{ "/File/sep3",                 NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/File/_Quit",                "<CTRL>Q",        gtk_main_quit, 0, "<StockItem>",  GTK_STOCK_QUIT },
+	{ "/_File",                     NULL,             NULL,                          0, "<Branch>",     NULL },
+	{ "/File/_New",                 NULL,             NULL,                          0, "<Branch>",     NULL },
+	{ "/File/New/_Article...",      "<CTRL>N",        NULL,                          0, "<StockItem>",  GTK_STOCK_NEW },
+	{ "/File/New/_Template...",     NULL,             NULL,                          0, "<Item>",       NULL },
+	{ "/File/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/File/_Open Workspace...",   "<CTRL>O",        NULL,                          0, "<StockItem>",  GTK_STOCK_OPEN },
+	{ "/File/_Refresh Workspace",   "<CTRL>R",        NULL,                          0, "<StockItem>",  GTK_STOCK_REFRESH },
+	{ "/File/_Close Workspace",     "<CTRL>W",        NULL,                          0, "<StockItem>",  GTK_STOCK_CLOSE },
+	{ "/File/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/File/_Save",                "<CTRL>S",        NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE },
+	{ "/File/Save _As...",          NULL,             NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE_AS },
+	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/File/_Quit",                "<CTRL>Q",        gtk_main_quit,                 0, "<StockItem>",  GTK_STOCK_QUIT },
 	// Edit.
-	{ "/_Edit",                     NULL,             NULL,          0, "<Branch>",     NULL },
-	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,          0, "<StockItem>",  GTK_STOCK_UNDO },
-	{ "/Edit/_Redo",                "<CTRL><SHIFT>Z", NULL,          0, "<StockItem>",  GTK_STOCK_REDO },
-	{ "/Edit/sep1",                 NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/Edit/Cu_t",                 "<CTRL>X",        NULL,          0, "<StockItem>",  GTK_STOCK_CUT },
-	{ "/Edit/_Copy",                "<CTRL>C",        NULL,          0, "<StockItem>",  GTK_STOCK_COPY },
-	{ "/Edit/_Paste",               "<CTRL>V",        NULL,          0, "<StockItem>",  GTK_STOCK_PASTE },
-	{ "/Edit/sep2",                 NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/Edit/Select A_ll",          "<CTRL>A",        NULL,          0, "<StockItem>",  GTK_STOCK_SELECT_ALL },
+	{ "/_Edit",                     NULL,             NULL,                          0, "<Branch>",     NULL },
+	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,                          0, "<StockItem>",  GTK_STOCK_UNDO },
+	{ "/Edit/_Redo",                "<CTRL><SHIFT>Z", NULL,                          0, "<StockItem>",  GTK_STOCK_REDO },
+	{ "/Edit/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/Edit/Cu_t",                 "<CTRL>X",        NULL,                          0, "<StockItem>",  GTK_STOCK_CUT },
+	{ "/Edit/_Copy",                "<CTRL>C",        NULL,                          0, "<StockItem>",  GTK_STOCK_COPY },
+	{ "/Edit/_Paste",               "<CTRL>V",        NULL,                          0, "<StockItem>",  GTK_STOCK_PASTE },
+	{ "/Edit/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/Edit/Select A_ll",          "<CTRL>A",        NULL,                          0, "<StockItem>",  GTK_STOCK_SELECT_ALL },
 	// Search.
-	{ "/_Search",                   NULL,             NULL,          0, "<Branch>",     NULL },
-	{ "/Search/_Find...",           "<CTRL>F",        NULL,          0, "<StockItem>",  GTK_STOCK_FIND },
-	{ "/Search/Find _Next",         "<CTRL>G",        NULL,          0, "<Item>",       NULL },
-	{ "/Search/_Replace...",        "<CTRL>H",        NULL,          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
-	{ "/Search/sep1",               NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/Search/Jump To Article...", "<CTRL>J",        NULL,          0, "<StockItem>",  GTK_STOCK_JUMP_TO },
+	{ "/_Search",                   NULL,             NULL,                          0, "<Branch>",     NULL },
+	{ "/Search/_Find...",           "<CTRL>F",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND },
+	{ "/Search/Find _Next",         "<CTRL>G",        NULL,                          0, "<Item>",       NULL },
+	{ "/Search/_Replace...",        "<CTRL>H",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
+	{ "/Search/sep1",               NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/Search/Jump To Article...", "<CTRL>J",        NULL,                          0, "<StockItem>",  GTK_STOCK_JUMP_TO },
 	// View.
-	{ "/_View",                     NULL,             NULL,          0, "<Branch>",     NULL },
-	{ "/View/Page _Viewer",         NULL,             NULL,          0, "<StockItem>",  GTK_STOCK_INDEX },
-	{ "/View/Page _Editor",         NULL,             NULL,          0, "<StockItem>",  GTK_STOCK_EDIT },
-	{ "/View/sep1",                 NULL,             NULL,          0, "<Separator>",  NULL },
-	{ "/View/_Toggle Page View",    "<CTRL>D",        NULL,          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
+	{ "/_View",                     NULL,             NULL,                          0, "<Branch>",     NULL },
+	{ "/View/Page _Viewer",         NULL,             show_page_viewer,              0, "<StockItem>",  GTK_STOCK_INDEX },
+	{ "/View/Page _Editor",         NULL,             show_page_editor,              0, "<StockItem>",  GTK_STOCK_EDIT },
+	{ "/View/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
+	{ "/View/_Toggle Page View",    "<CTRL>D",        toggle_notebook_page,          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
 	// Help.
-	{ "/_Help",                     NULL,             NULL,          0, "<LastBranch>", NULL },
-	{ "/Help/_About",               NULL,             NULL,          0, "<StockItem>",  GTK_STOCK_ABOUT }
+	{ "/_Help",                     NULL,             NULL,                          0, "<LastBranch>", NULL },
+	{ "/Help/_About",               NULL,             NULL,                          0, "<StockItem>",  GTK_STOCK_ABOUT }
 };
 
 // Signal callbacks.
@@ -78,7 +84,6 @@ void initialize_mainwindow() {
 	GtkWidget *hpaned;
 	GtkWidget *scltree;
 	GtkWidget *scleditor;
-	GtkWidget *notebook;
 	GtkWidget *pageeditor;
 	GtkWidget *pageviewer;
 
@@ -291,4 +296,40 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 					 (void*)(long)viewer_page_index);
 
 	return notebook;
+}
+
+/**
+ * Menu item callback for showing the page viewer.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void show_page_viewer(GtkWidget *widget, gpointer data) {
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
+}
+
+/**
+ * Menu item callback for showing the page editor.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void show_page_editor(GtkWidget *widget, gpointer data) {
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 1);
+}
+
+/**
+ * Menu item callback for toogleing between the page viewer and editor.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void toggle_notebook_page(GtkWidget *widget, gpointer data) {
+	GtkNotebook *nb = GTK_NOTEBOOK(notebook);
+
+	if (gtk_notebook_get_current_page(nb) == 1) {
+		gtk_notebook_prev_page(nb);
+	} else {
+		gtk_notebook_next_page(nb);
+	}
 }
