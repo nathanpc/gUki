@@ -5,9 +5,9 @@
  * @author: Nathan Campos <hi@nathancampos.me>
  */
 
-#include "PageManager.h"
 #include <uki/uki.h>
 #include <webkit/webkit.h>
+#include "PageManager.h"
 #include "DialogHelper.h"
 
 // Constants.
