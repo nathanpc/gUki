@@ -14,8 +14,4 @@
 // Initialization.
 void initialize_mainwindow();
 
-// Loading content.
-bool load_article(const gint index);
-bool load_template(const gint index);
-
 #endif /* _MAINWINDOW_H_ */

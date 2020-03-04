@@ -5,21 +5,16 @@
  * @author: Nathan Campos <hi@nathancampos.me>
  */
 
-#include <webkit/webkit.h>
 #include <uki/uki.h>
 #include "MainWindow.h"
 #include "DialogHelper.h"
+#include "PageManager.h"
 #include "Workspace.h"
-
-// Constants.
-#define MAX_URI UKI_MAX_PATH + 11
 
 // Private variables.
 GtkWidget *window;
 GtkWidget *statusbar;
 GtkWidget *treeview;
-GtkWidget *pageeditor;
-GtkWidget *pageviewer;
 GtkItemFactoryEntry menu_items[] = {
 	// File.
 	{ "/_File",                     NULL,             NULL,          0, "<Branch>",     NULL },
@@ -64,12 +59,9 @@ GtkItemFactoryEntry menu_items[] = {
 };
 
 // Private methods.
-bool load_file(const gchar *fpath, const gint article_index);
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
-GtkWidget* initialize_page_editor();
-GtkWidget* initialize_page_viewer();
 GtkWidget* initialize_notebook(GtkWidget *editor_container,
 							   GtkWidget *viewer_container);
 
@@ -83,6 +75,8 @@ void initialize_mainwindow() {
 	GtkWidget *scltree;
 	GtkWidget *scleditor;
 	GtkWidget *notebook;
+	GtkWidget *pageeditor;
+	GtkWidget *pageviewer;
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -120,8 +114,8 @@ void initialize_mainwindow() {
 										GTK_SHADOW_ETCHED_IN);
 	gtk_paned_add1(GTK_PANED(hpaned), scltree);
 
-	// Initialize the page editor.
-	pageeditor = initialize_page_editor();
+	// Initialize the page manager.
+	initialize_page_manager(&pageeditor, &pageviewer);
 
 	// Initialize the scrolled window that will contain the page editor.
 	scleditor = gtk_scrolled_window_new(NULL, NULL);
@@ -130,9 +124,6 @@ void initialize_mainwindow() {
 								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scleditor),
 										GTK_SHADOW_ETCHED_IN);
-
-	// Initialize page viewer.
-	pageviewer = initialize_page_viewer();
 
 	// Initialize the notebook that will hold the page viewer and editor.
 	notebook = initialize_notebook(scleditor, pageviewer);
@@ -150,66 +141,6 @@ void initialize_mainwindow() {
 
 	// Show the window.
 	gtk_widget_show_all(window);
-}
-
-/**
- * Loads an article to the page editor and viewer by its index.
- *
- * @param  index Article index.
- * @return       TRUE if the operation was successful.
- */
-bool load_article(const gint index) {
-	uki_article_t article;
-	char fpath[UKI_MAX_PATH];
-	int err;
-
-	// Get the article.
-	article = uki_article((size_t)index);
-	if (article.name == NULL) {
-		error_dialog("Unable to Find Article", "Article with index %d not "
-					 "found.", index);
-		return false;
-	}
-
-	// Get the file path.
-	if ((err = uki_article_fpath(fpath, article)) != UKI_OK) {
-		error_dialog("Path Error", "Unable to find path for article '%s'.",
-					 article.name);
-		return false;
-	}
-
-	// Load file contents.
-	return load_file(fpath, index);
-}
-
-/**
- * Loads a template to the page editor and viewer by its index.
- *
- * @param  index Article index.
- * @return       TRUE if the operation was successful.
- */
-bool load_template(const gint index) {
-	uki_template_t template;
-	char fpath[UKI_MAX_PATH];
-	int err;
-
-	// Get the template.
-	template = uki_template((size_t)index);
-	if (template.name == NULL) {
-		error_dialog("Unable to Find Template", "Template with index %d not "
-					 "found.", index);
-		return false;
-	}
-
-	// Get the file path.
-	if ((err = uki_template_fpath(fpath, template)) != UKI_OK) {
-		error_dialog("Path Error", "Unable to find path for template '%s'.",
-					 template.name);
-		return false;
-	}
-
-	// Load file contents.
-	return load_file(fpath, -1);
 }
 
 /**
@@ -329,79 +260,4 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 	// Set current page to be the first one and return.
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
 	return notebook;
-}
-
-/**
- * Initializes the page editor (GtkTextView) control.
- *
- * @return The GtkTextView control.
- */
-GtkWidget* initialize_page_editor() {
-	GtkWidget *editor;
-
-	// Create and setup editor.
-	editor = gtk_text_view_new();
-	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor), GTK_WRAP_WORD);
-
-	return editor;
-}
-
-/**
- * Initializes the page viewer (WebKitGTK) widget.
- *
- * @return The WebKitGTK widget.
- */
-GtkWidget* initialize_page_viewer() {
-	GtkWidget *webview;
-
-	// Initialize web viewer.
-	webview = webkit_web_view_new();
-
-	return webview;
-}
-
-/**
- * Loads the contents of a file to the page editor and viewer.
- *
- * @param  fpath         Path to the file to be read.
- * @param  article_index Article index if it is an article.
- * @return               TRUE if the operation was successful.
- */
-bool load_file(const gchar *fpath, const gint article_index) {
-	GtkTextBuffer *buffer;
-	GError *err;
-	char *contents;
-	char uri[MAX_URI];
-
-	// Read contents.
-	if (!g_file_get_contents(fpath, &contents, NULL, &err)) {
-		// TODO: Use GError.
-		error_dialog("Article Reading Error", "Failed to read the file '%s'.",
-					 fpath);
-		return false;
-	}
-
-	// Get page editor buffer and set its contents.
-	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(pageeditor));
-	gtk_text_buffer_set_text(buffer, contents, -1);
-
-	// Load the file into the web view.
-	snprintf(uri, MAX_URI, "file://%s", fpath);
-	if (article_index < 0) {
-		webkit_web_view_load_uri(WEBKIT_WEB_VIEW(pageviewer), uri);
-	} else {
-		uki_article_t article;
-
-		// Get article.
-		article = uki_article((size_t)article_index);
-
-		// Render the page.
-		uki_render_article_from_text(&contents, article.deepness);
-		webkit_web_view_load_string(WEBKIT_WEB_VIEW(pageviewer), contents, NULL,
-									NULL, uri);
-	}
-
-	// Free resources.
-	g_free(contents);
-	return true;
 }
