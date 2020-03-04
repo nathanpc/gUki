@@ -19,6 +19,10 @@ GtkWidget *treeview;
 GtkWidget *notebook;
 
 // Menu items and callbacks.
+void editor_cut(GtkWidget *widget, gpointer data);
+void editor_copy(GtkWidget *widget, gpointer data);
+void editor_paste(GtkWidget *widget, gpointer data);
+void editor_select_all(GtkWidget *widget, gpointer data);
 void show_page_viewer(GtkWidget *widget, gpointer data);
 void show_page_editor(GtkWidget *widget, gpointer data);
 void toggle_notebook_page(GtkWidget *widget, gpointer data);
@@ -43,11 +47,11 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,                          0, "<StockItem>",  GTK_STOCK_UNDO },
 	{ "/Edit/_Redo",                "<CTRL><SHIFT>Z", NULL,                          0, "<StockItem>",  GTK_STOCK_REDO },
 	{ "/Edit/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/Edit/Cu_t",                 "<CTRL>X",        NULL,                          0, "<StockItem>",  GTK_STOCK_CUT },
-	{ "/Edit/_Copy",                "<CTRL>C",        NULL,                          0, "<StockItem>",  GTK_STOCK_COPY },
-	{ "/Edit/_Paste",               "<CTRL>V",        NULL,                          0, "<StockItem>",  GTK_STOCK_PASTE },
+	{ "/Edit/Cu_t",                 "<CTRL>X",        editor_cut,                    0, "<StockItem>",  GTK_STOCK_CUT },
+	{ "/Edit/_Copy",                "<CTRL>C",        editor_copy,                   0, "<StockItem>",  GTK_STOCK_COPY },
+	{ "/Edit/_Paste",               "<CTRL>V",        editor_paste,                  0, "<StockItem>",  GTK_STOCK_PASTE },
 	{ "/Edit/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/Edit/Select A_ll",          "<CTRL>A",        NULL,                          0, "<StockItem>",  GTK_STOCK_SELECT_ALL },
+	{ "/Edit/Select A_ll",          "<CTRL>A",        editor_select_all,             0, "<StockItem>",  GTK_STOCK_SELECT_ALL },
 	// Search.
 	{ "/_Search",                   NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Search/_Find...",           "<CTRL>F",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND },
@@ -298,6 +302,80 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 					 (void*)(long)viewer_page_index);
 
 	return notebook;
+}
+
+/**
+ * Menu item callback for cutting the text in the editor.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void editor_cut(GtkWidget *widget, gpointer data) {
+	GtkClipboard *clipboard;
+	GtkTextBuffer *buffer;
+
+	// Get the text buffer and the default clipboard.
+	buffer = get_page_editor_buffer();
+	clipboard = gtk_clipboard_get(GDK_NONE);
+
+	// Actually cut the text.
+	gtk_text_buffer_cut_clipboard(buffer, clipboard, true);
+}
+
+/**
+ * Menu item callback for copying the text in the editor.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void editor_copy(GtkWidget *widget, gpointer data) {
+	GtkClipboard *clipboard;
+	GtkTextBuffer *buffer;
+
+	// Get the text buffer and the default clipboard.
+	buffer = get_page_editor_buffer();
+	clipboard = gtk_clipboard_get(GDK_NONE);
+
+	// Actually copy the text.
+	gtk_text_buffer_copy_clipboard(buffer, clipboard);
+}
+
+/**
+ * Menu item callback for pasting the text in the editor.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void editor_paste(GtkWidget *widget, gpointer data) {
+	GtkClipboard *clipboard;
+	GtkTextBuffer *buffer;
+
+	// Get the text buffer and the default clipboard.
+	buffer = get_page_editor_buffer();
+	clipboard = gtk_clipboard_get(GDK_NONE);
+
+	// Actually paste the text.
+	gtk_text_buffer_paste_clipboard(buffer, clipboard, NULL, true);
+}
+
+/**
+ * Menu item callback for selecting all the text in the editor.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void editor_select_all(GtkWidget *widget, gpointer data) {
+	GtkTextBuffer *buffer;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	// Get the buffer and the iterators.
+	buffer = get_page_editor_buffer();
+	gtk_text_buffer_get_start_iter(buffer, &start);
+	gtk_text_buffer_get_end_iter(buffer, &end);
+
+	// Do the selection.
+	gtk_text_buffer_select_range(buffer, &start, &end);
 }
 
 /**

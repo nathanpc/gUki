@@ -19,4 +19,7 @@ bool load_article(const gint index);
 bool load_template(const gint index);
 void refresh_page_viewer();
 
+// Misc.
+GtkTextBuffer* get_page_editor_buffer();
+
 #endif /* _PAGEMANAGER_H_ */

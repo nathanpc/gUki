@@ -224,3 +224,12 @@ bool load_file() {
 	g_free(contents);
 	return true;
 }
+
+/**
+ * Gets the page editor text buffer.
+ *
+ * @return The text buffer.
+ */
+GtkTextBuffer* get_page_editor_buffer() {
+	return gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor));
+}
