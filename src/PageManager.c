@@ -133,6 +133,10 @@ void refresh_page_viewer() {
 	GtkTextIter end;
 	char *contents;
 
+	// Check if we haven't opened anything yet.
+	if ((current_article_i < 0) && (current_template_i < 0))
+		return;
+
 	// Get page editor buffer and its contents.
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor));
 	gtk_text_buffer_get_start_iter(buffer, &start);

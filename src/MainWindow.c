@@ -58,8 +58,12 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/Help/_About",               NULL,             NULL,          0, "<StockItem>",  GTK_STOCK_ABOUT }
 };
 
-// Private methods.
+// Signal callbacks.
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
+void on_notebook_page_changed(GtkNotebook *notebook, GtkWidget *page,
+							  guint page_num, gpointer user_data);
+
+// Private methods.
 GtkWidget* initialize_menubar();
 GtkWidget* initialize_treeview();
 GtkWidget* initialize_notebook(GtkWidget *editor_container,
@@ -141,6 +145,26 @@ void initialize_mainwindow() {
 
 	// Show the window.
 	gtk_widget_show_all(window);
+}
+
+/**
+ * Callback for the notebook page changed signal.
+ *
+ * @param notebook  The notebook that received the signal.
+ * @param page      The new current widget.
+ * @param page_num  The index of the new page.
+ * @param user_data Data passed by the signal connector. In this case is the
+ *                  viewer page index.
+ */
+void on_notebook_page_changed(GtkNotebook *notebook, GtkWidget *page,
+							  guint page_num, gpointer user_data) {
+	// Get the viewer page index from the user_data field.
+	guint view_index = (unsigned int)(long)user_data;
+
+	// Only do something if we are changing to the viewer tab.
+	if (page_num == view_index) {
+		refresh_page_viewer();
+	}
 }
 
 /**
@@ -244,6 +268,7 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 	GtkWidget *notebook;
 	GtkWidget *lblview;
 	GtkWidget *lbledit;
+	guint viewer_page_index = 0;
 
 	// Initialize the notebook widget.
 	notebook = gtk_notebook_new();
@@ -257,7 +282,13 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), viewer_container, lblview);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), editor_container, lbledit);
 
-	// Set current page to be the first one and return.
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
+	// Set current page to be the first one.
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), viewer_page_index);
+
+	// Set the callback for the selection change signal.
+	g_signal_connect(notebook, "switch-page",
+					 G_CALLBACK(on_notebook_page_changed),
+					 (void*)(long)viewer_page_index);
+
 	return notebook;
 }
