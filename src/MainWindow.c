@@ -7,6 +7,7 @@
 
 #include <uki/uki.h>
 #include "MainWindow.h"
+#include "AppProperties.h"
 #include "DialogHelper.h"
 #include "PageManager.h"
 #include "Workspace.h"
@@ -21,6 +22,7 @@ GtkWidget *notebook;
 void show_page_viewer(GtkWidget *widget, gpointer data);
 void show_page_editor(GtkWidget *widget, gpointer data);
 void toggle_notebook_page(GtkWidget *widget, gpointer data);
+void show_about(GtkWidget *widget, gpointer data);
 GtkItemFactoryEntry menu_items[] = {
 	// File.
 	{ "/_File",                     NULL,             NULL,                          0, "<Branch>",     NULL },
@@ -61,7 +63,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/View/_Toggle Page View",    "<CTRL>D",        toggle_notebook_page,          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
 	// Help.
 	{ "/_Help",                     NULL,             NULL,                          0, "<LastBranch>", NULL },
-	{ "/Help/_About",               NULL,             NULL,                          0, "<StockItem>",  GTK_STOCK_ABOUT }
+	{ "/Help/_About",               NULL,             show_about,                    0, "<StockItem>",  GTK_STOCK_ABOUT }
 };
 
 // Signal callbacks.
@@ -89,7 +91,7 @@ void initialize_mainwindow() {
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), "gUki");
+	gtk_window_set_title(GTK_WINDOW(window), APP_NAME);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_widget_set_size_request(window, 700, 500);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -332,4 +334,14 @@ void toggle_notebook_page(GtkWidget *widget, gpointer data) {
 	} else {
 		gtk_notebook_next_page(nb);
 	}
+}
+
+/**
+ * Menu item callback for showing the about dialog.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void show_about(GtkWidget *widget, gpointer data) {
+	show_about_dialog();
 }

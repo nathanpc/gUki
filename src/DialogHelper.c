@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include "DialogHelper.h"
+#include "AppProperties.h"
 
 // Private variables.
 GtkWidget *window;
@@ -46,4 +47,26 @@ void error_dialog(const gchar *title, const gchar *message_format, ...) {
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	va_end(argptr);
+}
+
+/**
+ * Shows an about dialog.
+ */
+void show_about_dialog() {
+	GtkWidget *dialog;
+	GtkAboutDialog *about;
+
+	// Create the about dialog.
+	dialog = gtk_about_dialog_new();
+	about = GTK_ABOUT_DIALOG(dialog);
+
+	gtk_about_dialog_set_name(about, APP_NAME);
+	gtk_about_dialog_set_version(about, APP_VERSION);
+	gtk_about_dialog_set_copyright(about, APP_COPYRIGHT);
+	gtk_about_dialog_set_comments(about, APP_COMMENTS);
+	gtk_about_dialog_set_website(about, APP_WEBSITE);
+
+	// Show dialog and destroy it afterwards.
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }

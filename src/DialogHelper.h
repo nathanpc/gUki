@@ -16,4 +16,7 @@ void initialize_dialogs(GtkWidget *parent_window);
 // Message dialogs.
 void error_dialog(const gchar *title, const gchar *message_format, ...);
 
+// About dialog.
+void show_about_dialog();
+
 #endif /* _DIALOGHELPER_H_ */
