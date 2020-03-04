@@ -144,7 +144,7 @@ void refresh_page_viewer() {
 	contents = gtk_text_buffer_get_text(buffer, &start, &end, false);
 
 	// Load the contents into the web view.
-	if (current_article_i > 0) {
+	if (current_article_i >= 0) {
 		// Get the article
 		uki_article_t article = uki_article(current_article_i);
 
@@ -180,7 +180,7 @@ bool load_file() {
 	uki_article_t article;
 	uki_template_t template;
 
-	if (current_article_i > 0) {
+	if (current_article_i >= 0) {
 		// Get the article
 		article = uki_article(current_article_i);
 
