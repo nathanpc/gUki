@@ -157,7 +157,9 @@ void refresh_page_viewer() {
 		uki_template_t template = uki_template(current_template_i);
 
 		// Render the template.
-		webkit_web_view_load_uri(WEBKIT_WEB_VIEW(viewer), current_uri);
+		uki_render_template_from_text(&contents, template.deepness);
+		webkit_web_view_load_string(WEBKIT_WEB_VIEW(viewer), contents, NULL,
+									NULL, current_uri);
 	}
 
 	// Free resources.
