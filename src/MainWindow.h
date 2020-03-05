@@ -2,7 +2,7 @@
  * MainWindow.h
  * Helper class for dealing with the main window of the application.
  *
- * @author: Nathan Campos <hi@nathancampos.me>
+ * @author Nathan Campos <hi@nathancampos.me>
  */
 
 #ifndef _MAINWINDOW_H_

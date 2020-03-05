@@ -2,7 +2,7 @@
  * PageManager.c
  * A simple module to manage the page loading, editing, and saving.
  *
- * @author: Nathan Campos <hi@nathancampos.me>
+ * @author Nathan Campos <hi@nathancampos.me>
  */
 
 #include <uki/uki.h>

@@ -2,7 +2,7 @@
  * MainWindow.c
  * Helper class for dealing with the main window of the application.
  *
- * @author: Nathan Campos <hi@nathancampos.me>
+ * @author Nathan Campos <hi@nathancampos.me>
  */
 
 #include <uki/uki.h>

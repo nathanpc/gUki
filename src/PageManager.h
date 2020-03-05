@@ -2,7 +2,7 @@
  * PageManager.h
  * A simple module to manage the page loading, editing, and saving.
  *
- * @author: Nathan Campos <hi@nathancampos.me>
+ * @author Nathan Campos <hi@nathancampos.me>
  */
 
 #ifndef _PAGEMANAGER_H_

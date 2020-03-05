@@ -2,7 +2,7 @@
  * Workspace.c
  * A class to manage the Uki workspace and its associated controls.
  *
- * @author: Nathan Campos <nathan@innoveworkshop.com>
+ * @author Nathan Campos <nathan@innoveworkshop.com>
  */
 
 #include <uki/uki.h>

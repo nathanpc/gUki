@@ -2,7 +2,7 @@
  * DialogHelper.c
  * A simple dialog abstractor class.
  *
- * @author: Nathan Campos <hi@nathancampos.me>
+ * @author Nathan Campos <hi@nathancampos.me>
  */
 
 #include <stdarg.h>

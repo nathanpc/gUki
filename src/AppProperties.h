@@ -2,7 +2,7 @@
  * AppProperties.h
  * A simple header with the application properties.
  *
- * @author: Nathan Campos <hi@nathancampos.me>
+ * @author Nathan Campos <hi@nathancampos.me>
  */
 
 #ifndef _APPPROPERTIES_H_
