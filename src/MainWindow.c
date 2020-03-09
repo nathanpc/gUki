@@ -20,6 +20,7 @@ GtkWidget *treeview;
 GtkWidget *notebook;
 
 // Menu items and callbacks.
+void workspace_refresh(GtkWidget *widget, gpointer data);
 void page_save(GtkWidget *widget, gpointer data);
 void page_save_as(GtkWidget *widget, gpointer data);
 void editor_cut(GtkWidget *widget, gpointer data);
@@ -39,7 +40,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/New/_Template...",     NULL,             NULL,                          0, "<Item>",       NULL },
 	{ "/File/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/File/_Open Workspace...",   "<CTRL>O",        NULL,                          0, "<StockItem>",  GTK_STOCK_OPEN },
-	{ "/File/_Refresh Workspace",   "<CTRL>R",        NULL,                          0, "<StockItem>",  GTK_STOCK_REFRESH },
+	{ "/File/_Refresh Workspace",   "<CTRL>R",        workspace_refresh,             0, "<StockItem>",  GTK_STOCK_REFRESH },
 	{ "/File/_Close Workspace",     "<CTRL>W",        NULL,                          0, "<StockItem>",  GTK_STOCK_CLOSE },
 	{ "/File/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/File/_Save",                "<CTRL>S",        page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
@@ -310,6 +311,16 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 }
 
 /**
+ * Menu item callback for refreshing the workspace.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void workspace_refresh(GtkWidget *widget, gpointer data) {
+	reload_workspace();
+}
+
+/**
  * Menu item callback for saving the current opened page.
  *
  * @param widget Widget that fired this event.
@@ -389,10 +400,9 @@ void page_save_as(GtkWidget *widget, gpointer data) {
 		new_template(fpath);
 	}
 
-	// Save the new current page.
+	// Save the new current page and reload the workspace.
 	save_current_page();
-
-	// TODO: Reload the workspace.
+	reload_workspace();
 }
 
 /**
