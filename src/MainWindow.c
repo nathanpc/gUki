@@ -9,6 +9,7 @@
 #include "MainWindow.h"
 #include "AppProperties.h"
 #include "DialogHelper.h"
+#include "FindReplace.h"
 #include "PageManager.h"
 #include "Workspace.h"
 
@@ -25,6 +26,7 @@ void editor_paste(GtkWidget *widget, gpointer data);
 void editor_select_all(GtkWidget *widget, gpointer data);
 void show_page_viewer(GtkWidget *widget, gpointer data);
 void show_page_editor(GtkWidget *widget, gpointer data);
+void show_dialog_find(GtkWidget *widget, gpointer data);
 void toggle_notebook_page(GtkWidget *widget, gpointer data);
 void show_about(GtkWidget *widget, gpointer data);
 GtkItemFactoryEntry menu_items[] = {
@@ -41,7 +43,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/_Save",                "<CTRL>S",        NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE },
 	{ "/File/Save _As...",          NULL,             NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE_AS },
 	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Quit",                "<CTRL>Q",        gtk_main_quit,                 0, "<StockItem>",  GTK_STOCK_QUIT },
+	{ "/File/_Quit",                "<CTRL>Q",        window_destroy,                0, "<StockItem>",  GTK_STOCK_QUIT },
 	// Edit.
 	{ "/_Edit",                     NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,                          0, "<StockItem>",  GTK_STOCK_UNDO },
@@ -54,7 +56,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/Edit/Select A_ll",          "<CTRL>A",        editor_select_all,             0, "<StockItem>",  GTK_STOCK_SELECT_ALL },
 	// Search.
 	{ "/_Search",                   NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/Search/_Find...",           "<CTRL>F",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND },
+	{ "/Search/_Find...",           "<CTRL>F",        show_dialog_find,              0, "<StockItem>",  GTK_STOCK_FIND },
 	{ "/Search/Find _Next",         "<CTRL>G",        NULL,                          0, "<Item>",       NULL },
 	{ "/Search/_Replace...",        "<CTRL>H",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
 	{ "/Search/sep1",               NULL,             NULL,                          0, "<Separator>",  NULL },
@@ -98,7 +100,7 @@ void initialize_mainwindow() {
 	gtk_window_set_title(GTK_WINDOW(window), APP_NAME);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_widget_set_size_request(window, 700, 500);
-	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(window, "destroy", G_CALLBACK(window_destroy), NULL);
 
 	// Initialize dialogs.
 	initialize_dialogs(window);
@@ -129,8 +131,9 @@ void initialize_mainwindow() {
 										GTK_SHADOW_ETCHED_IN);
 	gtk_paned_add1(GTK_PANED(hpaned), scltree);
 
-	// Initialize the page manager.
+	// Initialize the page manager and the find and replace module.
 	initialize_page_manager(&pageeditor, &pageviewer);
+	initialize_find_replace(window, pageeditor);
 
 	// Initialize the scrolled window that will contain the page editor.
 	scleditor = gtk_scrolled_window_new(NULL, NULL);
@@ -399,6 +402,16 @@ void show_page_editor(GtkWidget *widget, gpointer data) {
 }
 
 /**
+ * Menu item callback for showing the find dialog.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void show_dialog_find(GtkWidget *widget, gpointer data) {
+	show_finder_dialog();
+}
+
+/**
  * Menu item callback for toogleing between the page viewer and editor.
  *
  * @param widget Widget that fired this event.
@@ -422,4 +435,16 @@ void toggle_notebook_page(GtkWidget *widget, gpointer data) {
  */
 void show_about(GtkWidget *widget, gpointer data) {
 	show_about_dialog();
+}
+
+/**
+ * Callback function for the window destruction signal.
+ */
+void window_destroy() {
+	// Clean up.
+	destroy_find_replace();
+	close_workspace();
+
+	// Return from the main loop.
+	gtk_main_quit();
 }

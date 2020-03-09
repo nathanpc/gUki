@@ -43,8 +43,5 @@ int main(int argc, char **argv) {
 
 	// Enter the GTK main loop.
 	gtk_main();
-
-	// Clean up and return.
-	uki_clean();
 	return 0;
 }

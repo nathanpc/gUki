@@ -11,7 +11,8 @@
 #include <stdbool.h>
 #include <gtk/gtk.h>
 
-// Initialization.
+// Initialization and Destruction.
 void initialize_mainwindow();
+void window_destroy();
 
 #endif /* _MAINWINDOW_H_ */
