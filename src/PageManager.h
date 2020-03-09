@@ -22,4 +22,7 @@ void refresh_page_viewer();
 // Misc.
 GtkTextBuffer* get_page_editor_buffer();
 
+// Saving.
+bool save_current_page();
+
 #endif /* _PAGEMANAGER_H_ */

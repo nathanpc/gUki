@@ -125,6 +125,71 @@ bool load_template(const gint index) {
 }
 
 /**
+ * Saves the current opened page to its file.
+ *
+ * @return TRUE if the operation was successful.
+ */
+bool save_current_page() {
+	GtkTextBuffer *buffer;
+	GtkTextIter start;
+	GtkTextIter end;
+	uki_error uki_err;
+	char *contents;
+	char fpath[UKI_MAX_PATH];
+	GError *g_err = NULL;
+
+	// Check if we haven't opened anything yet.
+	if ((current_article_i < 0) && (current_template_i < 0)) {
+		error_dialog("Page Saving Failed",
+					 "No article or template opened to be saved.");
+		return false;
+	}
+
+	// Get page editor buffer and its contents.
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor));
+	gtk_text_buffer_get_start_iter(buffer, &start);
+	gtk_text_buffer_get_end_iter(buffer, &end);
+	contents = gtk_text_buffer_get_text(buffer, &start, &end, false);
+
+	// Check if we have an article or tmeplate opened and get the file path.
+	if (current_article_i >= 0) {
+		// Get the article
+		uki_article_t article = uki_article(current_article_i);
+
+		// Get its path.
+		if ((uki_err = uki_article_fpath(fpath, article)) != UKI_OK) {
+			error_dialog("Error While Getting Article Path",
+						 uki_error_msg(uki_err));
+			return false;
+		}
+	} else {
+		// Get the template.
+		uki_template_t template = uki_template(current_template_i);
+
+		// Get its path.
+		if ((uki_err = uki_template_fpath(fpath, template)) != UKI_OK) {
+			error_dialog("Error While Getting Template Path",
+						 uki_error_msg(uki_err));
+			return false;
+		}
+	}
+
+	// Set file contents.
+	if (!g_file_set_contents(fpath, contents, -1, NULL)) {
+		// TODO: Use GError to get an error message.
+		error_dialog("Page Saving Error", "Failed to save to the file '%s'.",
+					 fpath);
+		g_error_free(g_err);
+
+		return false;
+	}
+
+	// Clean up.
+	g_free(contents);
+	return true;
+}
+
+/**
  * Reloads the contents of the page viewer based on the contents of the editor.
  */
 void refresh_page_viewer() {
@@ -173,12 +238,12 @@ void refresh_page_viewer() {
  */
 bool load_file() {
 	GtkTextBuffer *buffer;
-	GError *g_err;
 	char *contents;
 	uki_error uki_err;
 	char fpath[UKI_MAX_PATH];
 	uki_article_t article;
 	uki_template_t template;
+	GError *g_err = NULL;
 
 	if (current_article_i >= 0) {
 		// Get the article

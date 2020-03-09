@@ -20,6 +20,7 @@ GtkWidget *treeview;
 GtkWidget *notebook;
 
 // Menu items and callbacks.
+void page_save(GtkWidget *widget, gpointer data);
 void editor_cut(GtkWidget *widget, gpointer data);
 void editor_copy(GtkWidget *widget, gpointer data);
 void editor_paste(GtkWidget *widget, gpointer data);
@@ -40,7 +41,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/_Refresh Workspace",   "<CTRL>R",        NULL,                          0, "<StockItem>",  GTK_STOCK_REFRESH },
 	{ "/File/_Close Workspace",     "<CTRL>W",        NULL,                          0, "<StockItem>",  GTK_STOCK_CLOSE },
 	{ "/File/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Save",                "<CTRL>S",        NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE },
+	{ "/File/_Save",                "<CTRL>S",        page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
 	{ "/File/Save _As...",          NULL,             NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE_AS },
 	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/File/_Quit",                "<CTRL>Q",        window_destroy,                0, "<StockItem>",  GTK_STOCK_QUIT },
@@ -305,6 +306,16 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 					 (void*)(long)viewer_page_index);
 
 	return notebook;
+}
+
+/**
+ * Menu item callback for saving the current opened page.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void page_save(GtkWidget *widget, gpointer data) {
+	save_current_page();
 }
 
 /**
