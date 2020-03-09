@@ -21,8 +21,11 @@ void refresh_page_viewer();
 
 // Misc.
 GtkTextBuffer* get_page_editor_buffer();
+bool is_article_opened();
 
-// Saving.
+// Saving and creation.
 bool save_current_page();
+size_t new_article(const char *fpath);
+size_t new_template(const char *fpath);
 
 #endif /* _PAGEMANAGER_H_ */

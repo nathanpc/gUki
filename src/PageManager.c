@@ -152,7 +152,7 @@ bool save_current_page() {
 	contents = gtk_text_buffer_get_text(buffer, &start, &end, false);
 
 	// Check if we have an article or tmeplate opened and get the file path.
-	if (current_article_i >= 0) {
+	if (is_article_opened()) {
 		// Get the article
 		uki_article_t article = uki_article(current_article_i);
 
@@ -209,7 +209,7 @@ void refresh_page_viewer() {
 	contents = gtk_text_buffer_get_text(buffer, &start, &end, false);
 
 	// Load the contents into the web view.
-	if (current_article_i >= 0) {
+	if (is_article_opened()) {
 		// Get the article
 		uki_article_t article = uki_article(current_article_i);
 
@@ -245,7 +245,7 @@ bool load_file() {
 	uki_template_t template;
 	GError *g_err = NULL;
 
-	if (current_article_i >= 0) {
+	if (is_article_opened()) {
 		// Get the article
 		article = uki_article(current_article_i);
 
@@ -297,4 +297,55 @@ bool load_file() {
  */
 GtkTextBuffer* get_page_editor_buffer() {
 	return gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor));
+}
+
+/**
+ * Create a new article.
+ *
+ * @param  fpath File path to the new article to be created.
+ * @return       New article index.
+ */
+size_t new_article(const char *fpath) {
+	uki_article_t article;
+	size_t index;
+
+	// Create the article and get its index.
+	article = uki_add_article(fpath);
+	index = uki_articles_available() - 1;
+
+	// Set the state.
+	current_article_i = (ssize_t)index;
+	current_template_i = -1;
+
+	return index;
+}
+
+/**
+ * Create a new template.
+ *
+ * @param  fpath File path to the new template to be created.
+ * @return       New template index.
+ */
+size_t new_template(const char *fpath) {
+	uki_template_t template;
+	size_t index;
+
+	// Create the template and get its index.
+	template = uki_add_template(fpath);
+	index = uki_templates_available() - 1;
+
+	// Set the state.
+	current_article_i = -1;
+	current_template_i = (ssize_t)index;
+
+	return index;
+}
+
+/**
+ * Checks if an article is currently opened.
+ *
+ * @return TRUE if an article is opened.
+ */
+bool is_article_opened() {
+	return current_article_i >= 0;
 }

@@ -21,6 +21,7 @@ GtkWidget *notebook;
 
 // Menu items and callbacks.
 void page_save(GtkWidget *widget, gpointer data);
+void page_save_as(GtkWidget *widget, gpointer data);
 void editor_cut(GtkWidget *widget, gpointer data);
 void editor_copy(GtkWidget *widget, gpointer data);
 void editor_paste(GtkWidget *widget, gpointer data);
@@ -42,7 +43,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/_Close Workspace",     "<CTRL>W",        NULL,                          0, "<StockItem>",  GTK_STOCK_CLOSE },
 	{ "/File/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/File/_Save",                "<CTRL>S",        page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
-	{ "/File/Save _As...",          NULL,             NULL,                          0, "<StockItem>",  GTK_STOCK_SAVE_AS },
+	{ "/File/Save _As...",          NULL,             page_save_as,                  0, "<StockItem>",  GTK_STOCK_SAVE_AS },
 	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/File/_Quit",                "<CTRL>Q",        window_destroy,                0, "<StockItem>",  GTK_STOCK_QUIT },
 	// Edit.
@@ -316,6 +317,82 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
  */
 void page_save(GtkWidget *widget, gpointer data) {
 	save_current_page();
+}
+
+/**
+ * Menu item callback for saving the current opened page as a new page.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void page_save_as(GtkWidget *widget, gpointer data) {
+	GtkWidget *dialog;
+	GtkFileFilter *filter;
+	size_t ub_len;
+	gint res;
+	char *uri;
+	char fpath[UKI_MAX_PATH];
+	ub_len = sizeof("file://");
+
+	// Check if we have an article or template and setup accordingly.
+	if (is_article_opened()) {
+		uki_folder_articles(fpath);
+	} else {
+		uki_folder_templates(fpath);
+	}
+
+	// Allocate and build the URI string.
+	uri = (char*)malloc((ub_len + strlen(fpath) + 1) * sizeof(char));
+	sprintf(uri, "file://%s", fpath);
+
+	// Create the save dialog and set it up.
+	dialog = gtk_file_chooser_dialog_new("Save Page As..", GTK_WINDOW(window),
+										 GTK_FILE_CHOOSER_ACTION_SAVE,
+										 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+										 GTK_STOCK_SAVE_AS, GTK_RESPONSE_OK,
+										 NULL);
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+	gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), uri);
+	gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
+									  "." UKI_ARTICLE_EXT);
+
+	// Set the file filters.
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "HTML File");
+	gtk_file_filter_add_pattern(filter, "*." UKI_ARTICLE_EXT);
+	gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "All Files");
+	gtk_file_filter_add_pattern(filter, "*.*");
+	gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+	// Show the dialog.
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res != GTK_RESPONSE_OK) {
+		gtk_widget_destroy(dialog);
+		return;
+	}
+
+	// Get the file name and destroy the dialog.
+	free(uri);
+	uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
+	strcpy(fpath, uri + ub_len - 1);
+	g_free(uri);
+	gtk_widget_destroy(dialog);
+
+	// Create a new page.
+	if (is_article_opened()) {
+		new_article(fpath);
+	} else {
+		new_template(fpath);
+	}
+
+	// Save the new current page.
+	save_current_page();
+
+	// TODO: Reload the workspace.
 }
 
 /**
