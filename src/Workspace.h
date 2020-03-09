@@ -29,6 +29,7 @@ enum {
 void initialize_workspace(GtkWidget *tview);
 void close_workspace();
 bool open_workspace(const char *wiki_root);
+void reload_workspace();
 
 // TreeView Population.
 void populate_workspace_treeview();

@@ -11,6 +11,7 @@
 
 // Private variables.
 GtkWidget *treeview;
+char root_path[UKI_MAX_PATH];
 
 // Private methods.
 void treeview_clear();
@@ -43,8 +44,11 @@ bool open_workspace(const char *wiki_root) {
 		return false;
 	}
 
-	// Populate the tree view and return.
+	// Populate the tree view and store the wiki root.
 	populate_workspace_treeview();
+	if (root_path != wiki_root)
+		strcpy(root_path, wiki_root);
+
 	return true;
 }
 
@@ -58,6 +62,14 @@ void close_workspace() {
 
 	// Clean up our Uki mess.
 	uki_clean();
+}
+
+/**
+ * Reloads the workspace.
+ */
+void reload_workspace() {
+	close_workspace();
+	open_workspace(root_path);
 }
 
 /**
