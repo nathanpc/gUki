@@ -79,6 +79,11 @@ GtkItemFactoryEntry menu_items[] = {
 
 // Signal callbacks.
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
+void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata);
+gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
+								gpointer userdata);
+gboolean on_treeview_button_pressed(GtkWidget *widget, GdkEventButton *event,
+									gpointer userdata);
 void on_notebook_page_changed(GtkNotebook *notebook, GtkWidget *page,
 							  guint page_num, gpointer user_data);
 
@@ -186,10 +191,11 @@ void on_notebook_page_changed(GtkNotebook *notebook, GtkWidget *page,
  * @param callback_data Data passed to us by the signal connector.
  */
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
-	GtkTreeIter iter;
-	GtkTreeModel *model;
 	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
 
+	// Get the selected item.
 	selection = GTK_TREE_SELECTION(widget);
 	if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
 		gint index;
@@ -205,6 +211,133 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
 			break;
 		case ROW_TYPE_TEMPLATE:
 			load_template(index);
+			break;
+		}
+	}
+}
+
+/**
+ * Callback for the tree view button pressed signal.
+ *
+ * @param widget   The widget that received the signal.
+ * @param event    The event structure containing more information about it.
+ * @param userdata Data passed to us by the signal connector.
+ */
+gboolean on_treeview_button_pressed(GtkWidget *widget, GdkEventButton *event,
+									gpointer userdata) {
+	// Check that we had a right button single click event.
+	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3)) {
+		GtkTreeSelection *selection;
+		GtkTreePath *path;
+
+		// Get selection object and the path to the selected item.
+		selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+		if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget),
+										  event->x, event->y,
+										  &path, NULL, NULL, NULL)) {
+			// Unselect everything and select the one we are clicking at.
+			gtk_tree_selection_unselect_all(selection);
+			gtk_tree_selection_select_path(selection, path);
+
+			// Free the path.
+			gtk_tree_path_free(path);
+		}
+
+		// Everything is fine. We handled this.
+		return on_treeview_popup_menu(widget, event, userdata);
+	}
+
+	// Notify that we haven't handled this event.
+	return false;
+}
+
+/**
+ * Callback for the tree view popup menu signal.
+ *
+ * @param widget   The widget that received the signal.
+ * @param event    The event structure containing more information about it.
+ * @param userdata Data passed to us by the signal connector.
+ */
+gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
+								gpointer userdata) {
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	// Get the selected item.
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		gchar type;
+
+		// Get the type of the selected item and only proceed if it should.
+		gtk_tree_model_get(model, &iter, COL_TYPE, &type, -1);
+		if ((type == ROW_TYPE_ARTICLE) || (type == ROW_TYPE_TEMPLATE)) {
+			GtkWidget *menu;
+			GtkWidget *menuitem;
+
+			// Create the popup menu.
+			menu = gtk_menu_new();
+
+			// Create the Delete menu item.
+			menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
+														  NULL);
+			g_signal_connect(menuitem, "activate",
+							 G_CALLBACK(on_treeview_popup_menu_click_delete),
+							 widget);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+			// Create the Rename menu item.
+			menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT,
+														  NULL);
+			//g_signal_connect(menuitem, "activate",
+			//				 G_CALLBACK(on_treeview_popup_menu_click_delete),
+			//				 widget);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+			// Show the popup menu.
+			gtk_widget_show_all(menu);
+			gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+						   (event != NULL) ? event->button : 0,
+						   gdk_event_get_time((GdkEvent*)event));
+
+			// We handled this.
+			return true;
+		}
+	}
+
+	// We didn't handle this.
+    return false;
+}
+
+/**
+ * Callback for the tree view popup menu Delete clicked signal.
+ *
+ * @param widget   The widget that received the signal.
+ * @param userdata Data passed to us by the signal connector.
+ */
+void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata) {
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	// Get the selected item.
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(userdata));
+	if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		gint index;
+		gchar type;
+
+		// Get the important values from the selection.
+		gtk_tree_model_get(model, &iter, COL_INDEX, &index, COL_TYPE, &type, -1);
+
+		// Check for the type of selection.
+		switch (type) {
+		case ROW_TYPE_ARTICLE:
+			//load_article(index);
+			g_print("ARTICLE\n");
+			break;
+		case ROW_TYPE_TEMPLATE:
+			//load_template(index);
+			g_print("TEMPLATE\n");
 			break;
 		}
 	}
@@ -250,6 +383,10 @@ GtkWidget* initialize_treeview() {
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tview), false);
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tview));
 	gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+	g_signal_connect(tview, "button-press-event",
+					 G_CALLBACK(on_treeview_button_pressed), NULL);
+    g_signal_connect(tview, "popup-menu", G_CALLBACK(on_treeview_popup_menu),
+					 NULL);
 
 	// Create the main column
 	mcol = gtk_tree_view_column_new();
