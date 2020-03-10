@@ -15,12 +15,13 @@
 
 // Private variables.
 GtkWidget *window;
-GtkWidget *statusbar;
 GtkWidget *treeview;
 GtkWidget *notebook;
 
 // Menu items and callbacks.
+void workspace_open(GtkWidget *widget, gpointer data);
 void workspace_refresh(GtkWidget *widget, gpointer data);
+void workspace_close(GtkWidget *widget, gpointer data);
 void page_save(GtkWidget *widget, gpointer data);
 void page_save_as(GtkWidget *widget, gpointer data);
 void editor_cut(GtkWidget *widget, gpointer data);
@@ -39,9 +40,9 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/New/_Article...",      "<CTRL>N",        NULL,                          0, "<StockItem>",  GTK_STOCK_NEW },
 	{ "/File/New/_Template...",     NULL,             NULL,                          0, "<Item>",       NULL },
 	{ "/File/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Open Workspace...",   "<CTRL>O",        NULL,                          0, "<StockItem>",  GTK_STOCK_OPEN },
+	{ "/File/_Open Workspace...",   "<CTRL>O",        workspace_open,                0, "<StockItem>",  GTK_STOCK_OPEN },
 	{ "/File/_Refresh Workspace",   "<CTRL>R",        workspace_refresh,             0, "<StockItem>",  GTK_STOCK_REFRESH },
-	{ "/File/_Close Workspace",     "<CTRL>W",        NULL,                          0, "<StockItem>",  GTK_STOCK_CLOSE },
+	{ "/File/_Close Workspace",     "<CTRL>W",        workspace_close,               0, "<StockItem>",  GTK_STOCK_CLOSE },
 	{ "/File/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/File/_Save",                "<CTRL>S",        page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
 	{ "/File/Save _As...",          NULL,             page_save_as,                  0, "<StockItem>",  GTK_STOCK_SAVE_AS },
@@ -71,7 +72,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/View/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/View/_Toggle Page View",    "<CTRL>D",        toggle_notebook_page,          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
 	// Help.
-	{ "/_Help",                     NULL,             NULL,                          0, "<LastBranch>", NULL },
+	{ "/_Help",                     NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Help/_About",               NULL,             show_about,                    0, "<StockItem>",  GTK_STOCK_ABOUT }
 };
 
@@ -149,13 +150,6 @@ void initialize_mainwindow() {
 	// Initialize the notebook that will hold the page viewer and editor.
 	notebook = initialize_notebook(scleditor, pageviewer);
 	gtk_paned_add2(GTK_PANED(hpaned), notebook);
-
-	// Initialize the status bar.
-	statusbar = gtk_statusbar_new();
-	gtk_statusbar_push(GTK_STATUSBAR(statusbar),
-	gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), "Welcome to gUki"),
-					   "Welcome to gUki");
-	gtk_box_pack_start(GTK_BOX(vbox), statusbar, false, true, 0);
 
 	// Initialize the workspace.
 	initialize_workspace(treeview);
@@ -311,6 +305,50 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
 }
 
 /**
+ * Menu item callback for opening a new workspace.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void workspace_open(GtkWidget *widget, gpointer data) {
+	GtkWidget *dialog;
+	size_t ub_len;
+	gint res;
+	char *uri;
+	char fpath[UKI_MAX_PATH];
+	ub_len = sizeof("file://");
+
+	// Close the current workspace.
+	close_workspace();
+
+	// Create the open folder dialog and set it up.
+	dialog = gtk_file_chooser_dialog_new("Open Uki Workspace Folder",
+										 GTK_WINDOW(window),
+										 GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+										 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+										 GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+	gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
+
+	// Show the dialog.
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res != GTK_RESPONSE_OK) {
+		gtk_widget_destroy(dialog);
+		return;
+	}
+
+	// Get the file name and destroy the dialog.
+	uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
+	strncpy(fpath, uri + ub_len - 1, UKI_MAX_PATH - 1);
+	g_free(uri);
+	gtk_widget_destroy(dialog);
+
+	// Open the new workspace.
+	open_workspace(fpath);
+}
+
+/**
  * Menu item callback for refreshing the workspace.
  *
  * @param widget Widget that fired this event.
@@ -318,6 +356,16 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
  */
 void workspace_refresh(GtkWidget *widget, gpointer data) {
 	reload_workspace();
+}
+
+/**
+ * Menu item callback for closing the workspace.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void workspace_close(GtkWidget *widget, gpointer data) {
+	close_workspace();
 }
 
 /**

@@ -12,6 +12,7 @@
 // Private variables.
 GtkWidget *treeview;
 char root_path[UKI_MAX_PATH];
+bool workspace_opened;
 
 // Private methods.
 void treeview_clear();
@@ -25,6 +26,7 @@ void workspace_populate_templates(GtkTreeStore *store);
  */
 void initialize_workspace(GtkWidget *tview) {
 	treeview = tview;
+	workspace_opened = false;
 }
 
 /**
@@ -41,6 +43,7 @@ bool open_workspace(const char *wiki_root) {
 		error_dialog("Error While Initializing Workspace", uki_error_msg(err));
 		close_workspace();
 
+		workspace_opened = false;
 		return false;
 	}
 
@@ -49,6 +52,8 @@ bool open_workspace(const char *wiki_root) {
 	if (root_path != wiki_root)
 		strcpy(root_path, wiki_root);
 
+	// Set the opened flag and return.
+	workspace_opened = true;
 	return true;
 }
 
@@ -60,8 +65,12 @@ void close_workspace() {
 	treeview_clear();
 	// TODO: Clear all the controls.
 
-	// Clean up our Uki mess.
-	uki_clean();
+	// Clean up our Uki mess if there was something to clean up.
+	if (workspace_opened) {
+		uki_clean();
+	}
+
+	workspace_opened = false;
 }
 
 /**
