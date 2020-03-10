@@ -6,6 +6,7 @@
  */
 
 #include <uki/uki.h>
+#include <glib/gstdio.h>
 #include "MainWindow.h"
 #include "AppProperties.h"
 #include "DialogHelper.h"
@@ -286,14 +287,6 @@ gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
 							 widget);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-			// Create the Rename menu item.
-			menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT,
-														  NULL);
-			//g_signal_connect(menuitem, "activate",
-			//				 G_CALLBACK(on_treeview_popup_menu_click_delete),
-			//				 widget);
-			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
 			// Show the popup menu.
 			gtk_widget_show_all(menu);
 			gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
@@ -323,6 +316,8 @@ void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata) {
 	// Get the selected item.
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(userdata));
 	if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+		uki_error uki_err;
+		char fpath[UKI_MAX_PATH];
 		gint index;
 		gchar type;
 
@@ -330,16 +325,35 @@ void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata) {
 		gtk_tree_model_get(model, &iter, COL_INDEX, &index, COL_TYPE, &type, -1);
 
 		// Check for the type of selection.
-		switch (type) {
-		case ROW_TYPE_ARTICLE:
-			//load_article(index);
-			g_print("ARTICLE\n");
-			break;
-		case ROW_TYPE_TEMPLATE:
-			//load_template(index);
-			g_print("TEMPLATE\n");
-			break;
+		if (type == ROW_TYPE_ARTICLE) {
+			// Get the article
+			uki_article_t article = uki_article((size_t)index);
+
+			// Get the file path.
+			if ((uki_err = uki_article_fpath(fpath, article)) != UKI_OK) {
+				error_dialog("Path Error", "Unable to find path for article '%s'.",
+							 article.name);
+				return;
+			}
+		} else if (type == ROW_TYPE_TEMPLATE) {
+			// Get the template.
+			uki_template_t template = uki_template((size_t)index);
+
+			// Get the file path.
+			if ((uki_err = uki_template_fpath(fpath, template)) != UKI_OK) {
+				error_dialog("Path Error", "Unable to find path for template '%s'.",
+							 template.name);
+				return;
+			}
 		}
+
+		// Remove the file.
+		if (g_unlink(fpath))
+			error_dialog("Delete Error", "An error occured while trying to "
+						 "delete the file '%s'.", fpath);
+
+		// Reload the workspace.
+		reload_workspace();
 	}
 }
 
