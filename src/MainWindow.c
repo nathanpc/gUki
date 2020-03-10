@@ -213,6 +213,9 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
 		case ROW_TYPE_TEMPLATE:
 			load_template(index);
 			break;
+		default:
+			clear_page_contents();
+			break;
 		}
 	}
 }
