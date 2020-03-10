@@ -291,6 +291,21 @@ bool load_file() {
 }
 
 /**
+ * Clears the page editor and viewer widgets.
+ */
+void clear_page_contents() {
+	GtkTextBuffer *buffer;
+	char *contents = "\n";
+
+	// Get page editor buffer and set its contents.
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor));
+	gtk_text_buffer_set_text(buffer, contents, -1);
+
+	// Load the blank page..
+	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(viewer), "about:blank");
+}
+
+/**
  * Gets the page editor text buffer.
  *
  * @return The text buffer.

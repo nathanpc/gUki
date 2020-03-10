@@ -8,6 +8,7 @@
 #include <uki/uki.h>
 #include "Workspace.h"
 #include "DialogHelper.h"
+#include "PageManager.h"
 
 // Private variables.
 GtkWidget *treeview;
@@ -61,9 +62,9 @@ bool open_workspace(const char *wiki_root) {
  * Closes the workspace.
  */
 void close_workspace() {
-	// Clear the tree view.
+	// Clear the tree view and page editor and viewer.
 	treeview_clear();
-	// TODO: Clear all the controls.
+	clear_page_contents();
 
 	// Clean up our Uki mess if there was something to clean up.
 	if (workspace_opened) {
