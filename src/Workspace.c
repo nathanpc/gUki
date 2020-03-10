@@ -114,6 +114,10 @@ void populate_workspace_treeview() {
 void workspace_populate_articles(GtkTreeStore *store) {
 	GtkTreeIter root;
 	GtkTreeIter child;
+	GtkTreeIter folder;
+	GtkTreeIter *parent;
+	char last_parent[UKI_MAX_PATH];
+	last_parent[0] = '\0';
 
 	// Create articles root node.
 	gtk_tree_store_append(store, &root, NULL);
@@ -121,11 +125,35 @@ void workspace_populate_articles(GtkTreeStore *store) {
 					   COL_TYPE, ROW_TYPE_TITLE, -1);
 
 	// Go through articles.
+	parent = &root;
 	for (size_t i = 0; i < uki_articles_available(); i++) {
 		uki_article_t article = uki_article(i);
 
+		// Check if we have a parent.
+		if (article.parent != NULL) {
+			// Check if we should add a new folder.
+			if (strcmp(last_parent, article.parent) != 0) {
+				// Set the new last parent.
+				strcpy(last_parent, article.parent);
+
+				// Currently we only support a single deepness level.
+				parent = &root;
+
+				// Create the folder.
+				gtk_tree_store_append(store, &folder, parent);
+				gtk_tree_store_set(store, &folder, COL_NAME, article.parent,
+								   COL_INDEX, -1, COL_TYPE, ROW_TYPE_FOLDER, -1);
+
+				// Set the new folder as the parent.
+				parent = &folder;
+			}
+		} else {
+			// Back to the root.
+			parent = &root;
+		}
+
 		// Append as a child of articles.
-		gtk_tree_store_append(store, &child, &root);
+		gtk_tree_store_append(store, &child, parent);
 		gtk_tree_store_set(store, &child, COL_NAME, article.name, COL_INDEX, i,
 						   COL_TYPE, ROW_TYPE_ARTICLE, -1);
 	}
