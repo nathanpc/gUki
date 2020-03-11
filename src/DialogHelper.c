@@ -82,6 +82,42 @@ void warning_dialog(const gchar *title, const gchar *message_format, ...) {
 }
 
 /**
+ * Shows an "Unsaved Changes" dialog.
+ *
+ * @return TRUE if the user wants to continue editing the page.
+ */
+bool unsaved_changes_dialog() {
+	GtkWidget *dialog;
+	gint res;
+
+	// Create and setup dialog.
+	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+									GTK_DIALOG_DESTROY_WITH_PARENT,
+									GTK_MESSAGE_QUESTION,
+									GTK_BUTTONS_NONE,
+									"Unsaved Changes");
+	gtk_window_set_resizable(GTK_WINDOW(dialog), false);
+
+	// Add the buttons.
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+						   GTK_STOCK_NO, GTK_RESPONSE_NO,
+						   GTK_STOCK_YES, GTK_RESPONSE_YES,
+						   NULL);
+	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
+
+	// Add the message text to the dialog.
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+											 "Do you want to continue editing "
+											 "this page?");
+
+	// Show the dialog and destroy it after closing.
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+
+	return res == GTK_RESPONSE_YES;
+}
+
+/**
  * Shows an about dialog.
  */
 void show_about_dialog() {

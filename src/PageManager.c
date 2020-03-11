@@ -19,6 +19,7 @@ GtkWidget *viewer;
 ssize_t current_article_i;
 ssize_t current_template_i;
 char current_uri[MAX_URI];
+bool unsaved_changes;
 
 // Private methods.
 GtkWidget* initialize_page_editor();
@@ -43,6 +44,7 @@ void initialize_page_manager(GtkWidget **edit, GtkWidget **view) {
 	// Initialize our state variables.
 	current_article_i = -1;
 	current_template_i = -1;
+	unsaved_changes = false;
 }
 
 /**
@@ -72,6 +74,30 @@ GtkWidget* initialize_page_viewer() {
 	webview = webkit_web_view_new();
 
 	return webview;
+}
+
+/**
+ * Sets the unsaved changes flag.
+ *
+ * @param state Which state should the unsaved changes flag be in.
+ */
+void set_page_unsaved_changes(bool state) {
+	unsaved_changes = state;
+}
+
+/**
+ * Checks if a page has unsaved changes and shows a warning dialog.
+ *
+ * @return TRUE if the current operation should be aborted.
+ */
+bool check_page_unsaved_changes() {
+	// Check if we have unsaved changes and display the dialog if so.
+	if (unsaved_changes) {
+		return unsaved_changes_dialog();
+	}
+
+	set_page_unsaved_changes(false);
+	return false;
 }
 
 /**
@@ -184,8 +210,10 @@ bool save_current_page() {
 		return false;
 	}
 
-	// Clean up.
+	// Clean up and set state.
 	g_free(contents);
+	set_page_unsaved_changes(false);
+
 	return true;
 }
 
@@ -285,8 +313,10 @@ bool load_file() {
 	snprintf(current_uri, MAX_URI, "file://%s", fpath);
 	refresh_page_viewer();
 
-	// Free resources.
+	// Free resources and set state.
 	g_free(contents);
+	set_page_unsaved_changes(false);
+
 	return true;
 }
 
@@ -303,6 +333,9 @@ void clear_page_contents() {
 
 	// Load the blank page..
 	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(viewer), "about:blank");
+
+	// Set the state.
+	set_page_unsaved_changes(false);
 }
 
 /**
@@ -331,6 +364,7 @@ size_t new_article(const char *fpath) {
 	// Set the state.
 	current_article_i = (ssize_t)index;
 	current_template_i = -1;
+	set_page_unsaved_changes(false);
 
 	return index;
 }
@@ -352,6 +386,7 @@ size_t new_template(const char *fpath) {
 	// Set the state.
 	current_article_i = -1;
 	current_template_i = (ssize_t)index;
+	set_page_unsaved_changes(false);
 
 	return index;
 }

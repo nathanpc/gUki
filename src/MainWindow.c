@@ -50,7 +50,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/_Save",                "<CTRL>S",        page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
 	{ "/File/Save _As...",          NULL,             page_save_as,                  0, "<StockItem>",  GTK_STOCK_SAVE_AS },
 	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Quit",                "<CTRL>Q",        window_destroy,                0, "<StockItem>",  GTK_STOCK_QUIT },
+	{ "/File/_Quit",                "<CTRL>Q",        on_window_delete,              0, "<StockItem>",  GTK_STOCK_QUIT },
 	// Edit.
 	{ "/_Edit",                     NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,                          0, "<StockItem>",  GTK_STOCK_UNDO },
@@ -80,6 +80,7 @@ GtkItemFactoryEntry menu_items[] = {
 };
 
 // Signal callbacks.
+void on_editor_buffer_changed(GtkTextBuffer *buffer, gpointer user_data);
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata);
 gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
@@ -99,6 +100,7 @@ GtkWidget* initialize_notebook(GtkWidget *editor_container,
  * Initializes the main window of the application.
  */
 void initialize_mainwindow() {
+	GtkTextBuffer *editor_buffer;
 	GtkWidget *vbox;
 	GtkWidget *menubar;
 	GtkWidget *hpaned;
@@ -112,7 +114,8 @@ void initialize_mainwindow() {
 	gtk_window_set_title(GTK_WINDOW(window), APP_NAME);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_widget_set_size_request(window, 700, 500);
-	g_signal_connect(window, "destroy", G_CALLBACK(window_destroy), NULL);
+	g_signal_connect(window, "delete_event", G_CALLBACK(on_window_delete), NULL);
+	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	// Initialize dialogs.
 	initialize_dialogs(window);
@@ -147,6 +150,11 @@ void initialize_mainwindow() {
 	initialize_page_manager(&pageeditor, &pageviewer);
 	initialize_find_replace(window, pageeditor);
 
+	// Set the page editor text buffer changed signal callback.
+	editor_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(pageeditor));
+    g_signal_connect(editor_buffer, "changed",
+					 G_CALLBACK(on_editor_buffer_changed), NULL);
+
 	// Initialize the scrolled window that will contain the page editor.
 	scleditor = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(scleditor), pageeditor);
@@ -164,6 +172,30 @@ void initialize_mainwindow() {
 
 	// Show the window.
 	gtk_widget_show_all(window);
+}
+
+/**
+ * Callback function for the window deletionsignal.
+ */
+void on_window_delete() {
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
+
+	// Clean up.
+	destroy_find_replace();
+	close_workspace();
+}
+
+/**
+ * Callback for the page editor text buffer changed signal.
+ *
+ * @param buffer    The text buffer that originated the signal.
+ * @param user_data Data passed by the signal connector.
+ */
+void on_editor_buffer_changed(GtkTextBuffer *buffer, gpointer user_data) {
+	// Set the page as having unsaved changes.
+	set_page_unsaved_changes(true);
 }
 
 /**
@@ -196,6 +228,10 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
+
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
 
 	// Get the selected item.
 	selection = GTK_TREE_SELECTION(widget);
@@ -316,6 +352,10 @@ void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata) {
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
+
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
 
 	// Get the selected item.
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(userdata));
@@ -475,6 +515,10 @@ void menu_new_page(GtkWidget *widget, gpointer data) {
 	char fpath[UKI_MAX_PATH];
 	bool is_article;
 
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
+
 	// Set some state variables.
 	ub_len = sizeof("file://");
 	is_article = ((unsigned int)(long)data == 1);
@@ -556,6 +600,10 @@ void workspace_open(GtkWidget *widget, gpointer data) {
 	char fpath[UKI_MAX_PATH];
 	ub_len = sizeof("file://");
 
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
+
 	// Close the current workspace.
 	close_workspace();
 
@@ -593,6 +641,11 @@ void workspace_open(GtkWidget *widget, gpointer data) {
  * @param data   Data passed by the signal connector.
  */
 void workspace_refresh(GtkWidget *widget, gpointer data) {
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
+
+	// Actually reload the workspace.
 	reload_workspace();
 }
 
@@ -603,6 +656,11 @@ void workspace_refresh(GtkWidget *widget, gpointer data) {
  * @param data   Data passed by the signal connector.
  */
 void workspace_close(GtkWidget *widget, gpointer data) {
+	// Check if we have unsaved changes.
+	if (check_page_unsaved_changes())
+		return;
+
+	// Actually close the workspace.
 	close_workspace();
 }
 
@@ -829,16 +887,4 @@ void toggle_notebook_page(GtkWidget *widget, gpointer data) {
  */
 void show_about(GtkWidget *widget, gpointer data) {
 	show_about_dialog();
-}
-
-/**
- * Callback function for the window destruction signal.
- */
-void window_destroy() {
-	// Clean up.
-	destroy_find_replace();
-	close_workspace();
-
-	// Return from the main loop.
-	gtk_main_quit();
 }

@@ -9,6 +9,7 @@
 #define _DIALOGHELPER_H_
 
 #include <gtk/gtk.h>
+#include <stdbool.h>
 
 // Initialization.
 void initialize_dialogs(GtkWidget *parent_window);
@@ -19,7 +20,8 @@ void message_dialog(GtkDialogFlags type, const gchar *title,
 void warning_dialog(const gchar *title, const gchar *message_format, ...);
 void error_dialog(const gchar *title, const gchar *message_format, ...);
 
-// About dialog.
+// Special dialogs.
+bool unsaved_changes_dialog();
 void show_about_dialog();
 
 #endif /* _DIALOGHELPER_H_ */

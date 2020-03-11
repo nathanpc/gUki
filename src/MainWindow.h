@@ -13,6 +13,6 @@
 
 // Initialization and Destruction.
 void initialize_mainwindow();
-void window_destroy();
+void on_window_delete();
 
 #endif /* _MAINWINDOW_H_ */
