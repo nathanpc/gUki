@@ -33,6 +33,7 @@ void editor_select_all(GtkWidget *widget, gpointer data);
 void show_page_viewer(GtkWidget *widget, gpointer data);
 void show_page_editor(GtkWidget *widget, gpointer data);
 void show_dialog_find(GtkWidget *widget, gpointer data);
+void editor_find_next(GtkWidget *widget, gpointer data);
 void toggle_notebook_page(GtkWidget *widget, gpointer data);
 void show_about(GtkWidget *widget, gpointer data);
 GtkItemFactoryEntry menu_items[] = {
@@ -63,7 +64,7 @@ GtkItemFactoryEntry menu_items[] = {
 	// Search.
 	{ "/_Search",                   NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Search/_Find...",           "<CTRL>F",        show_dialog_find,              0, "<StockItem>",  GTK_STOCK_FIND },
-	{ "/Search/Find _Next",         "<CTRL>G",        NULL,                          0, "<Item>",       NULL },
+	{ "/Search/Find _Next",         "<CTRL>G",        editor_find_next,              0, "<Item>",       NULL },
 	{ "/Search/_Replace...",        "<CTRL>H",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
 	{ "/Search/sep1",               NULL,             NULL,                          0, "<Separator>",  NULL },
 	{ "/Search/Jump To Article...", "<CTRL>J",        NULL,                          0, "<StockItem>",  GTK_STOCK_JUMP_TO },
@@ -792,6 +793,16 @@ void show_page_editor(GtkWidget *widget, gpointer data) {
  */
 void show_dialog_find(GtkWidget *widget, gpointer data) {
 	show_finder_dialog();
+}
+
+/**
+ * Menu item callback for finding the next needle.
+ *
+ * @param widget Widget that fired this event.
+ * @param data   Data passed by the signal connector.
+ */
+void editor_find_next(GtkWidget *widget, gpointer data) {
+	find_next();
 }
 
 /**

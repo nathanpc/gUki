@@ -14,6 +14,9 @@
 void initialize_find_replace(GtkWidget *main_window, GtkWidget *_editor);
 void destroy_find_replace();
 
+// Actually Find and/or Replace.
+bool find_next();
+
 // Display.
 gint show_finder_dialog();
 

@@ -8,7 +8,12 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "FindReplace.h"
+#include "DialogHelper.h"
+
+// Constants.
+#define SEARCH_MARK "search_start"
 
 // Private variables.
 GtkWidget *parent;
@@ -21,7 +26,6 @@ bool match_case;
 // Private methods.
 void store_find_state();
 void restore_find_state();
-void find_next();
 
 /**
  * Initializes the find and replace module.
@@ -37,7 +41,7 @@ void initialize_find_replace(GtkWidget *main_window, GtkWidget *_editor) {
 	check_matchcase = NULL;
 
 	// Initialize the state variables.
-	match_case = false;
+	match_case = true;
 	needle = (char*)calloc(1, sizeof(char));
 }
 
@@ -92,6 +96,7 @@ gint show_finder_dialog() {
 	// Set some defaults.
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 	gtk_entry_set_activates_default(GTK_ENTRY(entry_find), true);
+	gtk_widget_set_sensitive(check_matchcase, false);
 
 	// Open dialog and clean up afterwards.
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -141,6 +146,73 @@ void restore_find_state() {
 /**
  * Performs a "Find Next" operation in the text view.
  */
-void find_next() {
-	//
+bool find_next() {
+	GtkTextBuffer *buffer;
+	GtkTextIter match_start;
+	GtkTextIter match_end;
+	GtkTextIter start;
+	GtkTextMark *mark;
+	char *search_needle;
+
+	// Handle case-insensitive search.
+	if (match_case) {
+		search_needle = needle;
+	} else {
+		char *tmp;
+
+		// Duplicate the needle string.
+		search_needle = strdup(needle);
+		tmp = search_needle;
+
+		// Convert needle to lowercase.
+		for (; *tmp != '\0'; tmp++) {
+			*tmp = tolower(*tmp);
+		}
+	}
+
+	// Get the text haystack buffer.
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor));
+
+	// Get the search mark and create one if it doesn't exist.
+	mark = gtk_text_buffer_get_mark(buffer, SEARCH_MARK);
+	if (mark == NULL) {
+		GtkTextIter iter;
+
+		// Get cursor iterator and create the mark.
+		gtk_text_buffer_get_iter_at_mark(buffer, &iter,
+										 gtk_text_buffer_get_insert(buffer));
+		mark = gtk_text_buffer_create_mark(buffer, SEARCH_MARK, &iter, false);
+	}
+
+	// Get iterator from mark and wrap around if we're at the end of the buffer.
+	gtk_text_buffer_get_iter_at_mark(buffer, &start, mark);
+	if (gtk_text_iter_is_end(&start))
+		gtk_text_buffer_get_start_iter(buffer, &start);
+
+	// Search for it.
+	if (!gtk_text_iter_forward_search(&start, search_needle,
+									  GTK_TEXT_SEARCH_TEXT_ONLY,
+									  &match_start, &match_end, NULL)) {
+		GtkTextIter iter;
+
+		// Display the warning message.
+		warning_dialog("String search failed", "Search string '%s' not found",
+					   needle);
+
+		// Wrap the search mark around.
+		gtk_text_buffer_get_start_iter(buffer, &iter);
+		gtk_text_buffer_move_mark_by_name(buffer, SEARCH_MARK, &iter);
+
+		return false;
+	}
+
+	// Select the text we found and move the search mark.
+	gtk_text_buffer_select_range(buffer, &match_start, &match_end);
+	gtk_text_buffer_move_mark_by_name(buffer, SEARCH_MARK, &match_end);
+
+	// Clean up.
+	if (!match_case)
+		free(search_needle);
+
+	return true;
 }
