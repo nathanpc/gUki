@@ -14,6 +14,9 @@
 void initialize_dialogs(GtkWidget *parent_window);
 
 // Message dialogs.
+void message_dialog(GtkDialogFlags type, const gchar *title,
+					const gchar *message_format, ...);
+void warning_dialog(const gchar *title, const gchar *message_format, ...);
 void error_dialog(const gchar *title, const gchar *message_format, ...);
 
 // About dialog.
