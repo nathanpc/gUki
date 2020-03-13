@@ -66,6 +66,7 @@ GtkItemFactoryEntry menu_items[] = {
 
 // Private methods.
 GtkWidget* initialize_menubar();
+GtkWidget* initialize_toolbar();
 GtkWidget* initialize_treeview();
 GtkWidget* initialize_notebook(GtkWidget *editor_container,
 							   GtkWidget *viewer_container);
@@ -77,6 +78,7 @@ void initialize_mainwindow() {
 	GtkTextBuffer *editor_buffer;
 	GtkWidget *vbox;
 	GtkWidget *menubar;
+	GtkWidget *toolbar;
 	GtkWidget *hpaned;
 	GtkWidget *scltree;
 	GtkWidget *scleditor;
@@ -99,9 +101,11 @@ void initialize_mainwindow() {
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 1);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 
-	// Initialize the menu bar.
+	// Initialize the menu bar and the tool bar.
 	menubar = initialize_menubar();
+	toolbar = initialize_toolbar();
 	gtk_box_pack_start(GTK_BOX(vbox), menubar, false, true, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, false, true, 0);
 
 	// Add a horizontal panel.
 	hpaned = gtk_hpaned_new();
@@ -161,6 +165,7 @@ void update_workspace_change_widgets() {
 	GtkWidget *menu_new_article;
 	GtkWidget *menu_save_as;
 	GtkWidget *menu_save;
+	GtkWidget *menu_jump_article;
 
 	// Get the menu item widgets.
 	menu_refresh_workspace = gtk_item_factory_get_widget(main_menu_factory,
@@ -175,6 +180,8 @@ void update_workspace_change_widgets() {
 			"/File/Save As...");
 	menu_save = gtk_item_factory_get_widget(main_menu_factory,
 			"/File/Save");
+	menu_jump_article = gtk_item_factory_get_widget(main_menu_factory,
+			"/Search/Jump To Article...");
 
 	// Handle workspace change.
 	if (is_workspace_opened()) {
@@ -182,11 +189,13 @@ void update_workspace_change_widgets() {
 		gtk_widget_set_sensitive(menu_close_workspace, true);
 		gtk_widget_set_sensitive(menu_new_article, true);
 		gtk_widget_set_sensitive(menu_new_templace, true);
+		gtk_widget_set_sensitive(menu_jump_article, true);
 	} else {
 		gtk_widget_set_sensitive(menu_refresh_workspace, false);
 		gtk_widget_set_sensitive(menu_close_workspace, false);
 		gtk_widget_set_sensitive(menu_new_article, false);
 		gtk_widget_set_sensitive(menu_new_templace, false);
+		gtk_widget_set_sensitive(menu_jump_article, false);
 	}
 
 	// Handle article change.
@@ -446,6 +455,60 @@ GtkWidget* initialize_menubar() {
 
 	// Generate the menu bar and return.
 	return gtk_item_factory_get_widget(main_menu_factory, "<main>");
+}
+
+/**
+ * Initializes the toolbar widget.
+ *
+ * @return Toolbar widget populated and ready.
+ */
+GtkWidget* initialize_toolbar() {
+	GtkWidget *toolbar;
+	GtkToolItem *item;
+
+	// Create the toolbar.
+	toolbar = gtk_toolbar_new();
+	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
+
+	// Add the page items.
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_JUMP_TO);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	
+	// Add the workspace items.
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_CLOSE);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+
+	// Add the usual edit items.
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_CUT);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_COPY);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_PASTE);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+
+	// Add the search items.
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_FIND);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_tool_button_new_from_stock(GTK_STOCK_FIND_AND_REPLACE);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+	item = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
+
+	return toolbar;
 }
 
 /**
