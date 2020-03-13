@@ -18,6 +18,7 @@
 GtkWidget *window;
 GtkWidget *treeview;
 GtkWidget *notebook;
+GtkItemFactory *main_menu_factory;
 
 // Menu items and callbacks.
 void menu_new_page(GtkWidget *widget, gpointer data);
@@ -50,7 +51,7 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/File/_Save",                "<CTRL>S",        page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
 	{ "/File/Save _As...",          NULL,             page_save_as,                  0, "<StockItem>",  GTK_STOCK_SAVE_AS },
 	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Quit",                "<CTRL>Q",        on_window_delete,              0, "<StockItem>",  GTK_STOCK_QUIT },
+	{ "/File/_Quit",                "<CTRL>Q",        window_destroy,                0, "<StockItem>",  GTK_STOCK_QUIT },
 	// Edit.
 	{ "/_Edit",                     NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,                          0, "<StockItem>",  GTK_STOCK_UNDO },
@@ -80,6 +81,7 @@ GtkItemFactoryEntry menu_items[] = {
 };
 
 // Signal callbacks.
+void on_window_delete();
 void on_editor_buffer_changed(GtkTextBuffer *buffer, gpointer user_data);
 void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
 void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata);
@@ -115,7 +117,7 @@ void initialize_mainwindow() {
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_widget_set_size_request(window, 700, 500);
 	g_signal_connect(window, "delete_event", G_CALLBACK(on_window_delete), NULL);
-	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(window, "destroy", G_CALLBACK(window_destroy), NULL);
 
 	// Initialize dialogs.
 	initialize_dialogs(window);
@@ -407,22 +409,21 @@ void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata) {
  * @return Menu bar widget already populated.
  */
 GtkWidget* initialize_menubar() {
-	GtkItemFactory *item_factory;
 	GtkAccelGroup *accel_group;
 	gint items_len;
 
 	// Create an accelerator group and the item factory to place the menus.
 	accel_group = gtk_accel_group_new();
-	item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>",
-										accel_group);
+	main_menu_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>",
+											 accel_group);
 
 	// Create the menu items from the factory and attach the accelerators.
 	items_len = sizeof(menu_items) / sizeof(GtkItemFactoryEntry);
-	gtk_item_factory_create_items(item_factory, items_len, menu_items, NULL);
+	gtk_item_factory_create_items(main_menu_factory, items_len, menu_items, NULL);
 	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
 
 	// Generate the menu bar and return.
-	return gtk_item_factory_get_widget(item_factory, "<main>");
+	return gtk_item_factory_get_widget(main_menu_factory, "<main>");
 }
 
 /**
@@ -887,4 +888,12 @@ void toggle_notebook_page(GtkWidget *widget, gpointer data) {
  */
 void show_about(GtkWidget *widget, gpointer data) {
 	show_about_dialog();
+}
+
+/**
+ * Destroys the main window
+ */
+void window_destroy() {
+	on_window_delete();
+	gtk_main_quit();
 }
