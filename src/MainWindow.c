@@ -15,28 +15,12 @@
 #include "Workspace.h"
 
 // Private variables.
+GtkItemFactory *main_menu_factory;
 GtkWidget *window;
 GtkWidget *treeview;
 GtkWidget *notebook;
-GtkItemFactory *main_menu_factory;
 
-// Menu items and callbacks.
-void menu_new_page(GtkWidget *widget, gpointer data);
-void workspace_open(GtkWidget *widget, gpointer data);
-void workspace_refresh(GtkWidget *widget, gpointer data);
-void workspace_close(GtkWidget *widget, gpointer data);
-void page_save(GtkWidget *widget, gpointer data);
-void page_save_as(GtkWidget *widget, gpointer data);
-void editor_cut(GtkWidget *widget, gpointer data);
-void editor_copy(GtkWidget *widget, gpointer data);
-void editor_paste(GtkWidget *widget, gpointer data);
-void editor_select_all(GtkWidget *widget, gpointer data);
-void show_page_viewer(GtkWidget *widget, gpointer data);
-void show_page_editor(GtkWidget *widget, gpointer data);
-void show_dialog_find(GtkWidget *widget, gpointer data);
-void editor_find_next(GtkWidget *widget, gpointer data);
-void toggle_notebook_page(GtkWidget *widget, gpointer data);
-void show_about(GtkWidget *widget, gpointer data);
+// Menu items.
 GtkItemFactoryEntry menu_items[] = {
 	// File.
 	{ "/_File",                     NULL,             NULL,                          0, "<Branch>",     NULL },
@@ -79,18 +63,6 @@ GtkItemFactoryEntry menu_items[] = {
 	{ "/_Help",                     NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Help/_About",               NULL,             show_about,                    0, "<StockItem>",  GTK_STOCK_ABOUT }
 };
-
-// Signal callbacks.
-void on_window_delete();
-void on_editor_buffer_changed(GtkTextBuffer *buffer, gpointer user_data);
-void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data);
-void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata);
-gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
-								gpointer userdata);
-gboolean on_treeview_button_pressed(GtkWidget *widget, GdkEventButton *event,
-									gpointer userdata);
-void on_notebook_page_changed(GtkNotebook *notebook, GtkWidget *page,
-							  guint page_num, gpointer user_data);
 
 // Private methods.
 GtkWidget* initialize_menubar();
@@ -174,6 +146,57 @@ void initialize_mainwindow() {
 
 	// Show the window.
 	gtk_widget_show_all(window);
+
+	// Set the state of the widgets affected by the changes.
+	update_workspace_change_widgets();
+}
+
+/**
+ * Updates the state the window widgets that are state-sensitive.
+ */
+void update_workspace_change_widgets() {
+	GtkWidget *menu_refresh_workspace;
+	GtkWidget *menu_close_workspace;
+	GtkWidget *menu_new_templace;
+	GtkWidget *menu_new_article;
+	GtkWidget *menu_save_as;
+	GtkWidget *menu_save;
+
+	// Get the menu item widgets.
+	menu_refresh_workspace = gtk_item_factory_get_widget(main_menu_factory,
+			"/File/Refresh Workspace");
+	menu_close_workspace = gtk_item_factory_get_widget(main_menu_factory, 
+			"/File/Close Workspace");
+	menu_new_templace = gtk_item_factory_get_widget(main_menu_factory,
+			"/File/New/Template...");
+	menu_new_article = gtk_item_factory_get_widget(main_menu_factory,
+			"/File/New/Article...");
+	menu_save_as = gtk_item_factory_get_widget(main_menu_factory,
+			"/File/Save As...");
+	menu_save = gtk_item_factory_get_widget(main_menu_factory,
+			"/File/Save");
+
+	// Handle workspace change.
+	if (is_workspace_opened()) {
+		gtk_widget_set_sensitive(menu_refresh_workspace, true);
+		gtk_widget_set_sensitive(menu_close_workspace, true);
+		gtk_widget_set_sensitive(menu_new_article, true);
+		gtk_widget_set_sensitive(menu_new_templace, true);
+	} else {
+		gtk_widget_set_sensitive(menu_refresh_workspace, false);
+		gtk_widget_set_sensitive(menu_close_workspace, false);
+		gtk_widget_set_sensitive(menu_new_article, false);
+		gtk_widget_set_sensitive(menu_new_templace, false);
+	}
+
+	// Handle article change.
+	if (is_article_opened()) {
+		gtk_widget_set_sensitive(menu_save, true);
+		gtk_widget_set_sensitive(menu_save_as, true);
+	} else {
+		gtk_widget_set_sensitive(menu_save, false);
+		gtk_widget_set_sensitive(menu_save_as, false);
+	}
 }
 
 /**
@@ -183,10 +206,6 @@ void on_window_delete() {
 	// Check if we have unsaved changes.
 	if (check_page_unsaved_changes())
 		return;
-
-	// Clean up.
-	destroy_find_replace();
-	close_workspace();
 }
 
 /**
@@ -257,6 +276,9 @@ void on_treeview_selection_changed(GtkWidget *widget, gpointer callback_data) {
 			break;
 		}
 	}
+
+	// Set the state of the widgets affected by the changes.
+	update_workspace_change_widgets();
 }
 
 /**
@@ -633,6 +655,9 @@ void workspace_open(GtkWidget *widget, gpointer data) {
 
 	// Open the new workspace.
 	open_workspace(fpath);
+
+	// Set the state of the widgets affected by the changes.
+	update_workspace_change_widgets();
 }
 
 /**
@@ -648,6 +673,9 @@ void workspace_refresh(GtkWidget *widget, gpointer data) {
 
 	// Actually reload the workspace.
 	reload_workspace();
+
+	// Set the state of the widgets affected by the changes.
+	update_workspace_change_widgets();
 }
 
 /**
@@ -663,6 +691,9 @@ void workspace_close(GtkWidget *widget, gpointer data) {
 
 	// Actually close the workspace.
 	close_workspace();
+
+	// Set the state of the widgets affected by the changes.
+	update_workspace_change_widgets();
 }
 
 /**
@@ -894,6 +925,14 @@ void show_about(GtkWidget *widget, gpointer data) {
  * Destroys the main window
  */
 void window_destroy() {
+	// Call the window deletion callback just to be sure.
 	on_window_delete();
+
+	// Clean up.
+	destroy_find_replace();
+	close_workspace();
+
+	// Quit the GTK loop.
 	gtk_main_quit();
 }
+

@@ -194,3 +194,12 @@ void treeview_clear() {
 	store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)));
 	gtk_tree_store_clear(store);
 }
+
+/**
+ * Is the workspace currently opened?
+ *
+ * @return TRUE if the workspace is opened.
+ */
+bool is_workspace_opened() {
+	return workspace_opened;
+}

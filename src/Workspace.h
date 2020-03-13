@@ -25,8 +25,13 @@ enum {
 	NUM_COLS
 };
 
-// Initialization and destruction.
+// State Checking.
+bool is_workspace_opened();
+
+// Initialization.
 void initialize_workspace(GtkWidget *tview);
+
+// Opening and Closing.
 void close_workspace();
 bool open_workspace(const char *wiki_root);
 void reload_workspace();
