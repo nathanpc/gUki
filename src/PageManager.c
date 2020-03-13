@@ -58,6 +58,8 @@ GtkWidget* initialize_page_editor() {
 	// Create and setup editor.
 	editor = gtk_text_view_new();
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor), GTK_WRAP_WORD);
+	gtk_widget_modify_font(editor,
+			pango_font_description_from_string("Monospace 10"));
 
 	return editor;
 }
