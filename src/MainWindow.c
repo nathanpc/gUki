@@ -111,6 +111,96 @@ void initialize_mainwindow() {
 }
 
 /**
+ * Initializes the tree view that will contain the articles and templates.
+ *
+ * @return Tree view widget to be populated.
+ */
+GtkWidget* initialize_treeview() {
+	GtkWidget *tview;
+	GtkTreeViewColumn *mcol;
+	GtkCellRenderer *renderer;
+	GtkTreeSelection *selection;
+
+	// Create tree view.
+	tview = gtk_tree_view_new();
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tview), false);
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tview));
+	gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+	g_signal_connect(tview, "button-press-event",
+					 G_CALLBACK(on_treeview_button_pressed), NULL);
+    g_signal_connect(tview, "popup-menu", G_CALLBACK(on_treeview_popup_menu),
+					 NULL);
+
+	// Create the main column
+	mcol = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_title(mcol, "Workspace");
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tview), mcol);
+
+	// Create the cell renderer.
+	renderer = gtk_cell_renderer_text_new();
+	gtk_tree_view_column_pack_start(mcol, renderer, TRUE);
+	gtk_tree_view_column_add_attribute(mcol, renderer, "text", 0);
+
+	// Set the callback for the selection change signal.
+	g_signal_connect(selection, "changed",
+					 G_CALLBACK(on_treeview_selection_changed), NULL);
+
+	return tview;
+}
+
+/**
+ * Initializes the notebook widget that will hold the page editor and viewer.
+ *
+ * @param  editor_container Widget that contains the page editor.
+ * @param  viewer_container Widget that contains the page viewer.
+ * @return                  The GtkNotebook widget.
+ */
+GtkWidget* initialize_notebook(GtkWidget *editor_container,
+							   GtkWidget *viewer_container) {
+	GtkWidget *notebook;
+	GtkWidget *lblview;
+	GtkWidget *lbledit;
+	guint viewer_page_index = 0;
+
+	// Initialize the notebook widget.
+	notebook = gtk_notebook_new();
+    gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
+
+	// Set the labels.
+	lblview = gtk_label_new("Viewer");
+	lbledit = gtk_label_new("Editor");
+
+	// Append widgets to the notebook.
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), viewer_container, lblview);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), editor_container, lbledit);
+
+	// Set current page to be the first one.
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), viewer_page_index);
+
+	// Set the callback for the selection change signal.
+	g_signal_connect(notebook, "switch-page",
+					 G_CALLBACK(on_notebook_page_changed),
+					 (void*)(long)viewer_page_index);
+
+	return notebook;
+}
+
+/**
+ * Destroys the main window
+ */
+void window_destroy() {
+	// Call the window deletion callback just to be sure.
+	on_window_delete();
+
+	// Clean up.
+	destroy_find_replace();
+	close_workspace();
+
+	// Quit the GTK loop.
+	gtk_main_quit();
+}
+
+/**
  * Callback function for the window deletionsignal.
  */
 void on_window_delete() {
@@ -337,87 +427,12 @@ void on_treeview_popup_menu_click_delete(GtkWidget *widget, gpointer userdata) {
 }
 
 /**
- * Initializes the tree view that will contain the articles and templates.
- *
- * @return Tree view widget to be populated.
- */
-GtkWidget* initialize_treeview() {
-	GtkWidget *tview;
-	GtkTreeViewColumn *mcol;
-	GtkCellRenderer *renderer;
-	GtkTreeSelection *selection;
-
-	// Create tree view.
-	tview = gtk_tree_view_new();
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tview), false);
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tview));
-	gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
-	g_signal_connect(tview, "button-press-event",
-					 G_CALLBACK(on_treeview_button_pressed), NULL);
-    g_signal_connect(tview, "popup-menu", G_CALLBACK(on_treeview_popup_menu),
-					 NULL);
-
-	// Create the main column
-	mcol = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(mcol, "Workspace");
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tview), mcol);
-
-	// Create the cell renderer.
-	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_column_pack_start(mcol, renderer, TRUE);
-	gtk_tree_view_column_add_attribute(mcol, renderer, "text", 0);
-
-	// Set the callback for the selection change signal.
-	g_signal_connect(selection, "changed",
-					 G_CALLBACK(on_treeview_selection_changed), NULL);
-
-	return tview;
-}
-
-/**
- * Initializes the notebook widget that will hold the page editor and viewer.
- *
- * @param  editor_container Widget that contains the page editor.
- * @param  viewer_container Widget that contains the page viewer.
- * @return                  The GtkNotebook widget.
- */
-GtkWidget* initialize_notebook(GtkWidget *editor_container,
-							   GtkWidget *viewer_container) {
-	GtkWidget *notebook;
-	GtkWidget *lblview;
-	GtkWidget *lbledit;
-	guint viewer_page_index = 0;
-
-	// Initialize the notebook widget.
-	notebook = gtk_notebook_new();
-    gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
-
-	// Set the labels.
-	lblview = gtk_label_new("Viewer");
-	lbledit = gtk_label_new("Editor");
-
-	// Append widgets to the notebook.
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), viewer_container, lblview);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), editor_container, lbledit);
-
-	// Set current page to be the first one.
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), viewer_page_index);
-
-	// Set the callback for the selection change signal.
-	g_signal_connect(notebook, "switch-page",
-					 G_CALLBACK(on_notebook_page_changed),
-					 (void*)(long)viewer_page_index);
-
-	return notebook;
-}
-
-/**
  * Menu item callback for creating a new page.
  *
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void menu_new_page(GtkWidget *widget, gpointer data) {
+void on_menu_new_page(GtkWidget *widget, gpointer data) {
 	GtkWidget *dialog;
 	GtkFileFilter *filter;
 	size_t ub_len;
@@ -503,7 +518,7 @@ void menu_new_page(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void workspace_open(GtkWidget *widget, gpointer data) {
+void on_workspace_open(GtkWidget *widget, gpointer data) {
 	GtkWidget *dialog;
 	size_t ub_len;
 	gint res;
@@ -554,7 +569,7 @@ void workspace_open(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void workspace_refresh(GtkWidget *widget, gpointer data) {
+void on_workspace_refresh(GtkWidget *widget, gpointer data) {
 	// Check if we have unsaved changes.
 	if (check_page_unsaved_changes())
 		return;
@@ -572,7 +587,7 @@ void workspace_refresh(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void workspace_close(GtkWidget *widget, gpointer data) {
+void on_workspace_close(GtkWidget *widget, gpointer data) {
 	// Check if we have unsaved changes.
 	if (check_page_unsaved_changes())
 		return;
@@ -590,7 +605,7 @@ void workspace_close(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void page_save(GtkWidget *widget, gpointer data) {
+void on_page_save(GtkWidget *widget, gpointer data) {
 	save_current_page();
 }
 
@@ -600,7 +615,7 @@ void page_save(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void page_save_as(GtkWidget *widget, gpointer data) {
+void on_page_save_as(GtkWidget *widget, gpointer data) {
 	GtkWidget *dialog;
 	GtkFileFilter *filter;
 	size_t ub_len;
@@ -675,7 +690,7 @@ void page_save_as(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void editor_cut(GtkWidget *widget, gpointer data) {
+void on_editor_cut(GtkWidget *widget, gpointer data) {
 	GtkClipboard *clipboard;
 	GtkTextBuffer *buffer;
 
@@ -693,7 +708,7 @@ void editor_cut(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void editor_copy(GtkWidget *widget, gpointer data) {
+void on_editor_copy(GtkWidget *widget, gpointer data) {
 	GtkClipboard *clipboard;
 	GtkTextBuffer *buffer;
 
@@ -711,7 +726,7 @@ void editor_copy(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void editor_paste(GtkWidget *widget, gpointer data) {
+void on_editor_paste(GtkWidget *widget, gpointer data) {
 	GtkClipboard *clipboard;
 	GtkTextBuffer *buffer;
 
@@ -729,7 +744,7 @@ void editor_paste(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void editor_select_all(GtkWidget *widget, gpointer data) {
+void on_editor_select_all(GtkWidget *widget, gpointer data) {
 	GtkTextBuffer *buffer;
 	GtkTextIter start;
 	GtkTextIter end;
@@ -749,7 +764,7 @@ void editor_select_all(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void show_page_viewer(GtkWidget *widget, gpointer data) {
+void on_show_page_viewer(GtkWidget *widget, gpointer data) {
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
 }
 
@@ -759,7 +774,7 @@ void show_page_viewer(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void show_page_editor(GtkWidget *widget, gpointer data) {
+void on_show_page_editor(GtkWidget *widget, gpointer data) {
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 1);
 }
 
@@ -769,7 +784,7 @@ void show_page_editor(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void show_dialog_find(GtkWidget *widget, gpointer data) {
+void on_show_dialog_find(GtkWidget *widget, gpointer data) {
 	show_finder_dialog();
 }
 
@@ -779,7 +794,7 @@ void show_dialog_find(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void editor_find_next(GtkWidget *widget, gpointer data) {
+void on_editor_find_next(GtkWidget *widget, gpointer data) {
 	find_next();
 }
 
@@ -789,7 +804,7 @@ void editor_find_next(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void toggle_notebook_page(GtkWidget *widget, gpointer data) {
+void on_toggle_notebook_page(GtkWidget *widget, gpointer data) {
 	GtkNotebook *nb = GTK_NOTEBOOK(notebook);
 
 	if (gtk_notebook_get_current_page(nb) == 1) {
@@ -805,22 +820,7 @@ void toggle_notebook_page(GtkWidget *widget, gpointer data) {
  * @param widget Widget that fired this event.
  * @param data   Data passed by the signal connector.
  */
-void show_about(GtkWidget *widget, gpointer data) {
+void on_show_about(GtkWidget *widget, gpointer data) {
 	show_about_dialog();
-}
-
-/**
- * Destroys the main window
- */
-void window_destroy() {
-	// Call the window deletion callback just to be sure.
-	on_window_delete();
-
-	// Clean up.
-	destroy_find_replace();
-	close_workspace();
-
-	// Quit the GTK loop.
-	gtk_main_quit();
 }
 

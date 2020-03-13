@@ -15,26 +15,23 @@
 void initialize_mainwindow();
 void window_destroy();
 
-// Widget updates.
-void update_workspace_change_widgets();
-
 // Menu items and callbacks.
-void menu_new_page(GtkWidget *widget, gpointer data);
-void workspace_open(GtkWidget *widget, gpointer data);
-void workspace_refresh(GtkWidget *widget, gpointer data);
-void workspace_close(GtkWidget *widget, gpointer data);
-void page_save(GtkWidget *widget, gpointer data);
-void page_save_as(GtkWidget *widget, gpointer data);
-void editor_cut(GtkWidget *widget, gpointer data);
-void editor_copy(GtkWidget *widget, gpointer data);
-void editor_paste(GtkWidget *widget, gpointer data);
-void editor_select_all(GtkWidget *widget, gpointer data);
-void show_page_viewer(GtkWidget *widget, gpointer data);
-void show_page_editor(GtkWidget *widget, gpointer data);
-void show_dialog_find(GtkWidget *widget, gpointer data);
-void editor_find_next(GtkWidget *widget, gpointer data);
-void toggle_notebook_page(GtkWidget *widget, gpointer data);
-void show_about(GtkWidget *widget, gpointer data);
+void on_menu_new_page(GtkWidget *widget, gpointer data);
+void on_workspace_open(GtkWidget *widget, gpointer data);
+void on_workspace_refresh(GtkWidget *widget, gpointer data);
+void on_workspace_close(GtkWidget *widget, gpointer data);
+void on_page_save(GtkWidget *widget, gpointer data);
+void on_page_save_as(GtkWidget *widget, gpointer data);
+void on_editor_cut(GtkWidget *widget, gpointer data);
+void on_editor_copy(GtkWidget *widget, gpointer data);
+void on_editor_paste(GtkWidget *widget, gpointer data);
+void on_editor_select_all(GtkWidget *widget, gpointer data);
+void on_show_page_viewer(GtkWidget *widget, gpointer data);
+void on_show_page_editor(GtkWidget *widget, gpointer data);
+void on_show_dialog_find(GtkWidget *widget, gpointer data);
+void on_editor_find_next(GtkWidget *widget, gpointer data);
+void on_toggle_notebook_page(GtkWidget *widget, gpointer data);
+void on_show_about(GtkWidget *widget, gpointer data);
 
 // Signal callbacks.
 void on_window_delete();
