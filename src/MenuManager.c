@@ -5,6 +5,7 @@
  * @author Nathan Campos <hi@nathancampos.me>
  */
 
+#include <gdk/gdkkeysyms.h>
 #include <stdarg.h>
 #include "MenuManager.h"
 #include "PageManager.h"
@@ -12,15 +13,110 @@
 #include "MainWindow.h"
 
 // Private variables.
-GtkItemFactory *main_menu_factory;
 GtkWidget *window;
+GtkWidget *menubar;
+GtkItemFactory *main_menu_factory;
 
-// Toolbar items.
+// Global toolbar items.
 GtkToolItem *tool_new_page;
 GtkToolItem *tool_save_page;
 GtkToolItem *tool_jump_to;
 GtkToolItem *tool_workspace_refresh;
 GtkToolItem *tool_workspace_close;
+
+// Global menu items.
+GtkWidget *menu_refresh_workspace;
+GtkWidget *menu_close_workspace;
+GtkWidget *menu_new_template;
+GtkWidget *menu_new_article;
+GtkWidget *menu_save_as;
+GtkWidget *menu_save;
+GtkWidget *menu_jump_article;
+
+/**
+ * Initializes the menu bar.
+ *
+ * @return Menu bar widget already populated.
+ */
+GtkWidget* initialize_menubar() {
+	GtkAccelGroup *accel_group = NULL;
+	GtkWidget *menu;
+	GtkWidget *menu_file;
+	GtkWidget *menu_edit;
+	GtkWidget *menu_search;
+	GtkWidget *menu_view;
+	GtkWidget *menu_help;
+	GtkWidget *submenu;
+	GtkWidget *subitem;
+	GtkWidget *item;
+	GtkWidget *separator;
+
+	// Create the menu bar and accelerator group.
+	menubar = gtk_menu_bar_new();
+	accel_group = gtk_accel_group_new();
+	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+
+	// Build the file menu.
+	menu = gtk_menu_new();
+	menu_file = gtk_menu_item_new_with_label("File");
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file), menu);
+	submenu = gtk_menu_new();
+	subitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(subitem), submenu);
+	menu_new_article = gtk_menu_item_new_with_label("Article...");
+	gtk_widget_add_accelerator(menu_new_article, "activate", accel_group,
+			GDK_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(menu_new_article), "activate",
+			G_CALLBACK(on_menu_new_page), (void*)(long)1);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_new_article);
+	menu_new_template = gtk_menu_item_new_with_label("Template...");
+	g_signal_connect(G_OBJECT(menu_new_template), "activate",
+			G_CALLBACK(on_menu_new_page), (void*)(long)2);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_new_template);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), subitem);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, accel_group);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Open Workspace...");
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_workspace_open),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	menu_refresh_workspace = gtk_image_menu_item_new_from_stock(
+			GTK_STOCK_REFRESH, accel_group);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_refresh_workspace),
+			"Refresh Workspace");
+	gtk_widget_add_accelerator(menu_refresh_workspace, "activate", accel_group,
+			GDK_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(menu_refresh_workspace), "activate",
+			G_CALLBACK(on_workspace_refresh), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_refresh_workspace);
+	menu_close_workspace = gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE,
+			accel_group);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_close_workspace),
+			"Close Workspace");
+	g_signal_connect(G_OBJECT(menu_close_workspace), "activate",
+			G_CALLBACK(on_workspace_close), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close_workspace);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	menu_save = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, accel_group);
+	g_signal_connect(G_OBJECT(menu_save), "activate", G_CALLBACK(on_page_save),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save);
+	menu_save_as = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE_AS, NULL);
+	g_signal_connect(G_OBJECT(menu_save_as), "activate",
+			G_CALLBACK(on_page_save_as), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_as);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(window_destroy),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_file);
+
+	return menubar;
+}
 
 // Menu items.
 GtkItemFactoryEntry menu_items[] = {
@@ -80,7 +176,7 @@ void initialize_menu_manager(GtkWidget *parent_window) {
  *
  * @return Menu bar widget already populated.
  */
-GtkWidget* initialize_menubar() {
+GtkWidget* initialize_menubar_factory() {
 	GtkAccelGroup *accel_group;
 	gint items_len;
 
@@ -173,20 +269,13 @@ GtkWidget* initialize_toolbar() {
  * Updates the state the widgets that are state-sensitive.
  */
 void update_workspace_state_menu() {
-	GtkWidget *menu_refresh_workspace;
-	GtkWidget *menu_close_workspace;
-	GtkWidget *menu_new_templace;
-	GtkWidget *menu_new_article;
-	GtkWidget *menu_save_as;
-	GtkWidget *menu_save;
-	GtkWidget *menu_jump_article;
-
+	return;
 	// Get the menu item widgets.
 	menu_refresh_workspace = gtk_item_factory_get_widget(main_menu_factory,
 			"/File/Refresh Workspace");
 	menu_close_workspace = gtk_item_factory_get_widget(main_menu_factory, 
 			"/File/Close Workspace");
-	menu_new_templace = gtk_item_factory_get_widget(main_menu_factory,
+	menu_new_template = gtk_item_factory_get_widget(main_menu_factory,
 			"/File/New/Template...");
 	menu_new_article = gtk_item_factory_get_widget(main_menu_factory,
 			"/File/New/Article...");
@@ -203,7 +292,7 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_refresh_workspace, true);
 		gtk_widget_set_sensitive(menu_close_workspace, true);
 		gtk_widget_set_sensitive(menu_new_article, true);
-		gtk_widget_set_sensitive(menu_new_templace, true);
+		gtk_widget_set_sensitive(menu_new_template, true);
 		gtk_widget_set_sensitive(menu_jump_article, true);
 
 		// Toolbar items.
@@ -216,7 +305,7 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_refresh_workspace, false);
 		gtk_widget_set_sensitive(menu_close_workspace, false);
 		gtk_widget_set_sensitive(menu_new_article, false);
-		gtk_widget_set_sensitive(menu_new_templace, false);
+		gtk_widget_set_sensitive(menu_new_template, false);
 		gtk_widget_set_sensitive(menu_jump_article, false);
 		
 		// Toolbar items.
