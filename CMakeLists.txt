@@ -1,5 +1,5 @@
 ### CMakeList.txt
-### CMake definitions for the Uki shared library.
+### CMake definitions for the gUki application.
 ###
 ### Author: Nathan Campos <hi@nathancampos.me>
 
