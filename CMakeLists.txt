@@ -10,7 +10,8 @@ cmake_minimum_required(VERSION 3.0)
 project(gUki VERSION 1.0.0 LANGUAGES C)
 set(CMAKE_BUILD_TYPE Debug)
 add_compile_options(-Wall -Wextra -pedantic -Wno-deprecated-declarations
-  -Wno-unused-parameter)
+  -Wno-unused-parameter -DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED
+  -DGTK_DISABLE_DEPRECATED)
 
 # Setup GTK+ and WebKitGTK.
 find_package(PkgConfig REQUIRED)
