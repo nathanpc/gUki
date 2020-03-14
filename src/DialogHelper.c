@@ -128,7 +128,7 @@ void show_about_dialog() {
 	dialog = gtk_about_dialog_new();
 	about = GTK_ABOUT_DIALOG(dialog);
 
-	gtk_about_dialog_set_name(about, APP_NAME);
+	gtk_about_dialog_set_program_name(about, APP_NAME);
 	gtk_about_dialog_set_version(about, APP_VERSION);
 	gtk_about_dialog_set_copyright(about, APP_COPYRIGHT);
 	gtk_about_dialog_set_comments(about, APP_COMMENTS);
