@@ -96,6 +96,8 @@ GtkWidget* initialize_menubar() {
 	item = gtk_menu_item_new_with_mnemonic("_Open");
 #endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Open Workspace...");
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_KEY_o, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_workspace_open),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -107,8 +109,8 @@ GtkWidget* initialize_menubar() {
 #endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_refresh_workspace),
 			"Refresh Workspace");
-	//gtk_widget_add_accelerator(menu_refresh_workspace, "activate", accel_group,
-	//		GDK_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator(menu_refresh_workspace, "activate", accel_group,
+			GDK_KEY_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(menu_refresh_workspace), "activate",
 			G_CALLBACK(on_workspace_refresh), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_refresh_workspace);
@@ -120,6 +122,8 @@ GtkWidget* initialize_menubar() {
 #endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_close_workspace),
 			"Close Workspace");
+	gtk_widget_add_accelerator(menu_close_workspace, "activate", accel_group,
+			GDK_KEY_w, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(menu_close_workspace), "activate",
 			G_CALLBACK(on_workspace_close), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close_workspace);
@@ -130,6 +134,8 @@ GtkWidget* initialize_menubar() {
 #else
 	menu_save = gtk_menu_item_new_with_mnemonic("_Save");
 #endif
+	gtk_widget_add_accelerator(menu_save, "activate", accel_group,
+			GDK_KEY_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(menu_save), "activate", G_CALLBACK(on_page_save),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save);
@@ -148,6 +154,8 @@ GtkWidget* initialize_menubar() {
 #else
 	item = gtk_menu_item_new_with_mnemonic("_Quit");
 #endif
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(window_destroy),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -185,6 +193,8 @@ GtkWidget* initialize_menubar() {
 #else
 	item = gtk_menu_item_new_with_mnemonic("Cut");
 #endif
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_KEY_x, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_cut),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -193,6 +203,8 @@ GtkWidget* initialize_menubar() {
 #else
 	item = gtk_menu_item_new_with_mnemonic("Copy");
 #endif
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_KEY_c, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_copy),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -201,6 +213,8 @@ GtkWidget* initialize_menubar() {
 #else
 	item = gtk_menu_item_new_with_mnemonic("Paste");
 #endif
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_KEY_v, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_paste),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -229,6 +243,8 @@ GtkWidget* initialize_menubar() {
 #else
 	item = gtk_menu_item_new_with_mnemonic("_Find...");
 #endif
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_KEY_f, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_show_dialog_find), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -246,7 +262,7 @@ GtkWidget* initialize_menubar() {
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND_AND_REPLACE,
 			accel_group);
 #else
-	item = gtk_menu_item_new_with_mnemonic("Find and Replace");
+	item = gtk_menu_item_new_with_mnemonic("Find and Replace...");
 #endif
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_KEY_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
@@ -259,7 +275,7 @@ GtkWidget* initialize_menubar() {
 	menu_jump_page = gtk_image_menu_item_new_from_stock(GTK_STOCK_JUMP_TO,
 			accel_group);
 #else
-	item = gtk_menu_item_new_with_mnemonic("Jump To");
+	menu_jump_page = gtk_menu_item_new_with_mnemonic("Jump To");
 #endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_jump_page), "Jump To Page...");
 	gtk_widget_add_accelerator(menu_jump_page, "activate", accel_group,
@@ -408,11 +424,13 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_new_template, true);
 		gtk_widget_set_sensitive(menu_jump_page, true);
 
+#if GTK_MAJOR_VERSION == 2
 		// Toolbar items.
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_workspace_refresh), true);
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_workspace_close), true);
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_new_page), true);
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_jump_to), true);
+#endif
 	} else {
 		// Menu items.
 		gtk_widget_set_sensitive(menu_refresh_workspace, false);
@@ -421,11 +439,13 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_new_template, false);
 		gtk_widget_set_sensitive(menu_jump_page, false);
 		
+#if GTK_MAJOR_VERSION == 2
 		// Toolbar items.
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_workspace_refresh), false);
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_workspace_close), false);
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_new_page), false);
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_jump_to), false);
+#endif
 	}
 
 	// Handle article change.
@@ -434,15 +454,19 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_save, true);
 		gtk_widget_set_sensitive(menu_save_as, true);
 
+#if GTK_MAJOR_VERSION == 2
 		// Toolbar items.
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_save_page), true);
+#endif
 	} else {
 		// Menu items.
 		gtk_widget_set_sensitive(menu_save, false);
 		gtk_widget_set_sensitive(menu_save_as, false);
 
+#if GTK_MAJOR_VERSION == 2
 		// Toolbar items.
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_save_page), false);
+#endif
 	}
 }
 
