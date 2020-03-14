@@ -15,7 +15,6 @@
 // Private variables.
 GtkWidget *window;
 GtkWidget *menubar;
-GtkItemFactory *main_menu_factory;
 
 // Global toolbar items.
 GtkToolItem *tool_new_page;
@@ -31,7 +30,16 @@ GtkWidget *menu_new_template;
 GtkWidget *menu_new_article;
 GtkWidget *menu_save_as;
 GtkWidget *menu_save;
-GtkWidget *menu_jump_article;
+GtkWidget *menu_jump_page;
+
+/**
+ * Initializes te menu manager.
+ *
+ * @param parent_window Parent window widget.
+ */
+void initialize_menu_manager(GtkWidget *parent_window) {
+	window = parent_window;
+}
 
 /**
  * Initializes the menu bar.
@@ -85,8 +93,8 @@ GtkWidget* initialize_menubar() {
 			GTK_STOCK_REFRESH, accel_group);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_refresh_workspace),
 			"Refresh Workspace");
-	gtk_widget_add_accelerator(menu_refresh_workspace, "activate", accel_group,
-			GDK_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	//gtk_widget_add_accelerator(menu_refresh_workspace, "activate", accel_group,
+	//		GDK_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(menu_refresh_workspace), "activate",
 			G_CALLBACK(on_workspace_refresh), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_refresh_workspace);
@@ -160,8 +168,7 @@ GtkWidget* initialize_menubar() {
 	menu = gtk_menu_new();
 	menu_search = gtk_menu_item_new_with_label("Search");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_search), menu);
-	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND,
-			accel_group);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND, accel_group);
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_show_dialog_find), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -180,13 +187,14 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
-	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_JUMP_TO, accel_group);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Jump To Page...");
-	gtk_widget_add_accelerator(item, "activate", accel_group,
+	menu_jump_page = gtk_image_menu_item_new_from_stock(GTK_STOCK_JUMP_TO,
+			accel_group);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_jump_page), "Jump To Page...");
+	gtk_widget_add_accelerator(menu_jump_page, "activate", accel_group,
 			GDK_j, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-	//g_signal_connect(G_OBJECT(item), "activate",
+	//g_signal_connect(G_OBJECT(menu_jump_page), "activate",
 	//		G_CALLBACK(on_jump_to_page), NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_jump_page);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_search);
 
 	// Build the view menu.
@@ -205,9 +213,7 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
-	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND_AND_REPLACE,
-			accel_group);
-	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Toggle Page View");
+	item = gtk_menu_item_new_with_label("Toggle Page View");
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_d, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
@@ -219,54 +225,13 @@ GtkWidget* initialize_menubar() {
 	menu = gtk_menu_new();
 	menu_help = gtk_menu_item_new_with_label("Help");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_help), menu);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, accel_group);
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_show_about), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_help);
 
 	return menubar;
-}
-
-// Menu items.
-GtkItemFactoryEntry menu_items[] = {
-	// View.
-	{ "/_View",                     NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/View/Page _Viewer",         NULL,             on_show_page_viewer,              0, "<StockItem>",  GTK_STOCK_INDEX },
-	{ "/View/Page _Editor",         NULL,             on_show_page_editor,              0, "<StockItem>",  GTK_STOCK_EDIT },
-	{ "/View/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/View/_Toggle Page View",    "<CTRL>D",        on_toggle_notebook_page,          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
-	// Help.
-	{ "/_Help",                     NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/Help/_About",               NULL,             on_show_about,                    0, "<StockItem>",  GTK_STOCK_ABOUT }
-};
-
-/**
- * Initializes te menu manager.
- *
- * @param parent_window Parent window widget.
- */
-void initialize_menu_manager(GtkWidget *parent_window) {
-	window = parent_window;
-}
-
-/**
- * Initializes the menu bar.
- *
- * @return Menu bar widget already populated.
- */
-GtkWidget* initialize_menubar_factory() {
-	GtkAccelGroup *accel_group;
-	gint items_len;
-
-	// Create an accelerator group and the item factory to place the menus.
-	accel_group = gtk_accel_group_new();
-	main_menu_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<main>",
-											 accel_group);
-
-	// Create the menu items from the factory and attach the accelerators.
-	items_len = sizeof(menu_items) / sizeof(GtkItemFactoryEntry);
-	gtk_item_factory_create_items(main_menu_factory, items_len, menu_items, NULL);
-	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
-
-	// Generate the menu bar and return.
-	return gtk_item_factory_get_widget(main_menu_factory, "<main>");
 }
 
 /**
@@ -351,7 +316,7 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_close_workspace, true);
 		gtk_widget_set_sensitive(menu_new_article, true);
 		gtk_widget_set_sensitive(menu_new_template, true);
-		gtk_widget_set_sensitive(menu_jump_article, true);
+		gtk_widget_set_sensitive(menu_jump_page, true);
 
 		// Toolbar items.
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_workspace_refresh), true);
@@ -364,7 +329,7 @@ void update_workspace_state_menu() {
 		gtk_widget_set_sensitive(menu_close_workspace, false);
 		gtk_widget_set_sensitive(menu_new_article, false);
 		gtk_widget_set_sensitive(menu_new_template, false);
-		gtk_widget_set_sensitive(menu_jump_article, false);
+		gtk_widget_set_sensitive(menu_jump_page, false);
 		
 		// Toolbar items.
 		gtk_widget_set_sensitive(GTK_WIDGET(tool_workspace_refresh), false);
