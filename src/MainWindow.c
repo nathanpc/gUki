@@ -80,7 +80,6 @@ void initialize_mainwindow() {
 
 	// Initialize the tree view.
 	treeview = initialize_treeview();
-	gtk_widget_set_size_request(treeview, window_width / 5, -1);
 
 	// Initialize the scrolled window that will contain the tree view.
 	scltree = gtk_scrolled_window_new(NULL, NULL);
@@ -359,7 +358,7 @@ gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
 
 			// Create the Delete menu item.
 #if GTK_MAJOR_VERSION == 2
-			menuitem = gtk_image_menu_item_new_with_stock(GTK_STOCK_DELETE,
+			menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
 					NULL);
 #else
 			menuitem = gtk_menu_item_new_with_mnemonic("Delete");
