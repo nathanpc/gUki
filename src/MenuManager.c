@@ -156,6 +156,51 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_edit);
 
+	// Build the search menu.
+	menu = gtk_menu_new();
+	menu_search = gtk_menu_item_new_with_label("Search");
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_search), menu);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND,
+			accel_group);
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_show_dialog_find), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	item = gtk_menu_item_new_with_label("Find Next");
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_g, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_editor_find_next), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND_AND_REPLACE,
+			accel_group);
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	//g_signal_connect(G_OBJECT(item), "activate",
+	//		G_CALLBACK(on_show_dialog_find), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_JUMP_TO, accel_group);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Jump To Page...");
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_j, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	//g_signal_connect(G_OBJECT(item), "activate",
+	//		G_CALLBACK(on_jump_to_page), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_search);
+
+	// Build the view menu.
+	menu = gtk_menu_new();
+	menu_view = gtk_menu_item_new_with_label("View");
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_view), menu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_view);
+
+	// Build the help menu.
+	menu = gtk_menu_new();
+	menu_help = gtk_menu_item_new_with_label("Help");
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_help), menu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_help);
+
 	return menubar;
 }
 
@@ -286,23 +331,6 @@ GtkWidget* initialize_toolbar() {
  * Updates the state the widgets that are state-sensitive.
  */
 void update_workspace_state_menu() {
-	return;
-	// Get the menu item widgets.
-	menu_refresh_workspace = gtk_item_factory_get_widget(main_menu_factory,
-			"/File/Refresh Workspace");
-	menu_close_workspace = gtk_item_factory_get_widget(main_menu_factory, 
-			"/File/Close Workspace");
-	menu_new_template = gtk_item_factory_get_widget(main_menu_factory,
-			"/File/New/Template...");
-	menu_new_article = gtk_item_factory_get_widget(main_menu_factory,
-			"/File/New/Article...");
-	menu_save_as = gtk_item_factory_get_widget(main_menu_factory,
-			"/File/Save As...");
-	menu_save = gtk_item_factory_get_widget(main_menu_factory,
-			"/File/Save");
-	menu_jump_article = gtk_item_factory_get_widget(main_menu_factory,
-			"/Search/Jump To Article...");
-
 	// Handle workspace change.
 	if (is_workspace_opened()) {
 		// Menu items.
