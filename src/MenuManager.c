@@ -115,35 +115,52 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_file);
 
+	// Build the edit menu.
+	menu = gtk_menu_new();
+	menu_edit = gtk_menu_item_new_with_label("Edit");
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_edit), menu);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, accel_group);
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_z, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	//g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_undo),
+	//		NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, accel_group);
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
+	//g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_redo),
+	//		NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, accel_group);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_cut),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, accel_group);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_copy),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, accel_group);
+	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_paste),
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL,
+			accel_group);
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_editor_select_all), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_edit);
+
 	return menubar;
 }
 
 // Menu items.
 GtkItemFactoryEntry menu_items[] = {
-	// File.
-	{ "/_File",                     NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/File/_New",                 NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/File/New/_Article...",      "<CTRL>N",        on_menu_new_page,            1, "<StockItem>",  GTK_STOCK_NEW },
-	{ "/File/New/_Template...",     NULL,             on_menu_new_page,                 2, "<Item>",       NULL },
-	{ "/File/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Open Workspace...",   "<CTRL>O",        on_workspace_open,                0, "<StockItem>",  GTK_STOCK_OPEN },
-	{ "/File/_Refresh Workspace",   "<CTRL>R",        on_workspace_refresh,             0, "<StockItem>",  GTK_STOCK_REFRESH },
-	{ "/File/_Close Workspace",     "<CTRL>W",        on_workspace_close,               0, "<StockItem>",  GTK_STOCK_CLOSE },
-	{ "/File/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Save",                "<CTRL>S",        on_page_save,                     0, "<StockItem>",  GTK_STOCK_SAVE },
-	{ "/File/Save _As...",          NULL,             on_page_save_as,                  0, "<StockItem>",  GTK_STOCK_SAVE_AS },
-	{ "/File/sep3",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/File/_Quit",                "<CTRL>Q",        window_destroy,                0, "<StockItem>",  GTK_STOCK_QUIT },
-	// Edit.
-	{ "/_Edit",                     NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/Edit/_Undo",                "<CTRL>Z",        NULL,                          0, "<StockItem>",  GTK_STOCK_UNDO },
-	{ "/Edit/_Redo",                "<CTRL><SHIFT>Z", NULL,                          0, "<StockItem>",  GTK_STOCK_REDO },
-	{ "/Edit/sep1",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/Edit/Cu_t",                 "<CTRL>X",        on_editor_cut,                    0, "<StockItem>",  GTK_STOCK_CUT },
-	{ "/Edit/_Copy",                "<CTRL>C",        on_editor_copy,                   0, "<StockItem>",  GTK_STOCK_COPY },
-	{ "/Edit/_Paste",               "<CTRL>V",        on_editor_paste,                  0, "<StockItem>",  GTK_STOCK_PASTE },
-	{ "/Edit/sep2",                 NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/Edit/Select A_ll",          "<CTRL>A",        on_editor_select_all,             0, "<StockItem>",  GTK_STOCK_SELECT_ALL },
 	// Search.
 	{ "/_Search",                   NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/Search/_Find...",           "<CTRL>F",        on_show_dialog_find,              0, "<StockItem>",  GTK_STOCK_FIND },
