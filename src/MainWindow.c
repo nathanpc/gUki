@@ -38,6 +38,7 @@ void initialize_mainwindow() {
 	GtkWidget *scleditor;
 	GtkWidget *pageeditor;
 	GtkWidget *pageviewer;
+	gint window_width;
 
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -46,6 +47,9 @@ void initialize_mainwindow() {
 	gtk_widget_set_size_request(window, 700, 500);
 	g_signal_connect(window, "delete_event", G_CALLBACK(on_window_delete), NULL);
 	g_signal_connect(window, "destroy", G_CALLBACK(window_destroy), NULL);
+
+	// Get window width for relative width stuff.
+	gtk_window_get_size(GTK_WINDOW(window), &window_width, NULL);
 
 	// Initialize dialogs.
 	initialize_dialogs(window);
@@ -76,10 +80,11 @@ void initialize_mainwindow() {
 
 	// Initialize the tree view.
 	treeview = initialize_treeview();
-	gtk_widget_set_size_request(treeview, 200, -1);
+	gtk_widget_set_size_request(treeview, window_width / 5, -1);
 
 	// Initialize the scrolled window that will contain the tree view.
 	scltree = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_set_size_request(scltree, window_width / 3, -1);
 	gtk_container_add(GTK_CONTAINER(scltree), treeview);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scltree),
 								   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
