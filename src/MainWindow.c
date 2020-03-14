@@ -67,9 +67,11 @@ void initialize_mainwindow() {
 	// Initialize the menu bar and the tool bar.
 	initialize_menu_manager(window);
 	menubar = initialize_menubar();
-	toolbar = initialize_toolbar();
 	gtk_box_pack_start(GTK_BOX(vbox), menubar, false, true, 0);
+#if GTK_MAJOR_VERSION == 2
+	toolbar = initialize_toolbar();
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, false, true, 0);
+#endif
 
 	// Add a horizontal panel.
 #if GTK_MAJOR_VERSION == 2

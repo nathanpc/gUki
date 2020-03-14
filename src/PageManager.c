@@ -352,7 +352,13 @@ void clear_page_contents() {
 	gtk_text_buffer_set_text(buffer, contents, -1);
 
 	// Load the blank page..
-	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(viewer), "about:blank");
+#if GTK_MAJOR_VERSION == 2
+		webkit_web_view_load_string(WEBKIT_WEB_VIEW(viewer), contents, NULL,
+									NULL, current_uri);
+#else
+		webkit_web_view_load_html(WEBKIT_WEB_VIEW(viewer), contents,
+				current_uri);
+#endif
 
 	// Set the state.
 	set_page_unsaved_changes(false);

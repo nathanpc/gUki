@@ -188,10 +188,16 @@ void workspace_populate_templates(GtkTreeStore *store) {
  * Clears the whole workspace treeview.
  */
 void treeview_clear() {
+	GtkTreeModel *model;
 	GtkTreeStore *store;
 
-	// Get the tree view store and clear it.
-	store = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeview)));
+	// Get the tree view model.
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+	if (model == NULL)
+		return;
+
+	// Get tree view store and clear it.
+	store = GTK_TREE_STORE(model);
 	gtk_tree_store_clear(store);
 }
 
