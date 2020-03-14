@@ -353,8 +353,12 @@ gboolean on_treeview_popup_menu(GtkWidget *widget, GdkEventButton *event,
 			menu = gtk_menu_new();
 
 			// Create the Delete menu item.
-			menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
-														  NULL);
+#if GTK_MAJOR_VERSION == 2
+			menuitem = gtk_image_menu_item_new_with_stock(GTK_STOCK_DELETE,
+					NULL);
+#else
+			menuitem = gtk_menu_item_new_with_mnemonic("Delete");
+#endif
 			g_signal_connect(menuitem, "activate",
 							 G_CALLBACK(on_treeview_popup_menu_click_delete),
 							 widget);
@@ -471,8 +475,13 @@ void on_menu_new_page(GtkWidget *widget, gpointer data) {
 	// Create the save dialog and set it up.
 	dialog = gtk_file_chooser_dialog_new("New Page", GTK_WINDOW(window),
 										 GTK_FILE_CHOOSER_ACTION_SAVE,
+#if GTK_MAJOR_VERSION == 2
 										 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 										 GTK_STOCK_NEW, GTK_RESPONSE_OK,
+#else
+										 "Cancel", GTK_RESPONSE_CANCEL,
+										 "New", GTK_RESPONSE_OK,
+#endif
 										 NULL);
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 	gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), uri);
@@ -545,8 +554,13 @@ void on_workspace_open(GtkWidget *widget, gpointer data) {
 	dialog = gtk_file_chooser_dialog_new("Open Uki Workspace Folder",
 										 GTK_WINDOW(window),
 										 GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+#if GTK_MAJOR_VERSION == 2
 										 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 										 GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+#else
+										 "Cancel", GTK_RESPONSE_CANCEL,
+										 "Open", GTK_RESPONSE_OK, NULL);
+#endif
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 	gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(dialog), true);
 	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
@@ -646,8 +660,13 @@ void on_page_save_as(GtkWidget *widget, gpointer data) {
 	// Create the save dialog and set it up.
 	dialog = gtk_file_chooser_dialog_new("Save Page As", GTK_WINDOW(window),
 										 GTK_FILE_CHOOSER_ACTION_SAVE,
+#if GTK_MAJOR_VERSION == 2
 										 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 										 GTK_STOCK_SAVE_AS, GTK_RESPONSE_OK,
+#else
+										 "Cancel", GTK_RESPONSE_CANCEL,
+										 "Save As", GTK_RESPONSE_OK,
+#endif
 										 NULL);
 	gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 	gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), uri);

@@ -66,10 +66,16 @@ GtkWidget* initialize_menubar() {
 
 	// Build the file menu.
 	menu = gtk_menu_new();
+	gtk_menu_set_accel_group(GTK_MENU(menu), accel_group);
 	menu_file = gtk_menu_item_new_with_label("File");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file), menu);
 	submenu = gtk_menu_new();
+	gtk_menu_set_accel_group(GTK_MENU(submenu), accel_group);
+#if GTK_MAJOR_VERSION == 2
 	subitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
+#else
+	subitem = gtk_menu_item_new_with_mnemonic("_New");
+#endif
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(subitem), submenu);
 	menu_new_article = gtk_menu_item_new_with_label("Article...");
 	gtk_widget_add_accelerator(menu_new_article, "activate", accel_group,
@@ -84,13 +90,21 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), subitem);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("_Open");
+#endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Open Workspace...");
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_workspace_open),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	menu_refresh_workspace = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_REFRESH, accel_group);
+#else
+	menu_refresh_workspace = gtk_menu_item_new_with_mnemonic("_Refresh");
+#endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_refresh_workspace),
 			"Refresh Workspace");
 	//gtk_widget_add_accelerator(menu_refresh_workspace, "activate", accel_group,
@@ -98,8 +112,12 @@ GtkWidget* initialize_menubar() {
 	g_signal_connect(G_OBJECT(menu_refresh_workspace), "activate",
 			G_CALLBACK(on_workspace_refresh), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_refresh_workspace);
+#if GTK_MAJOR_VERSION == 2
 	menu_close_workspace = gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE,
 			accel_group);
+#else
+	menu_close_workspace = gtk_menu_item_new_with_mnemonic("_Close");
+#endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_close_workspace),
 			"Close Workspace");
 	g_signal_connect(G_OBJECT(menu_close_workspace), "activate",
@@ -107,17 +125,29 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close_workspace);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+#if GTK_MAJOR_VERSION == 2
 	menu_save = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, accel_group);
+#else
+	menu_save = gtk_menu_item_new_with_mnemonic("_Save");
+#endif
 	g_signal_connect(G_OBJECT(menu_save), "activate", G_CALLBACK(on_page_save),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save);
+#if GTK_MAJOR_VERSION == 2
 	menu_save_as = gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE_AS, NULL);
+#else
+	menu_save_as = gtk_menu_item_new_with_mnemonic("Save As");
+#endif
 	g_signal_connect(G_OBJECT(menu_save_as), "activate",
 			G_CALLBACK(on_page_save_as), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_as);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("_Quit");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(window_destroy),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -125,15 +155,24 @@ GtkWidget* initialize_menubar() {
 
 	// Build the edit menu.
 	menu = gtk_menu_new();
+	gtk_menu_set_accel_group(GTK_MENU(menu), accel_group);
 	menu_edit = gtk_menu_item_new_with_label("Edit");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_edit), menu);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Undo");
+#endif
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_KEY_z, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_undo),
 	//		NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Redo");
+#endif
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_KEY_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_redo),
@@ -141,22 +180,38 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Cut");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_cut),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Copy");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_copy),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Paste");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_paste),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL,
 			accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Select All");
+#endif
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_KEY_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
@@ -166,20 +221,33 @@ GtkWidget* initialize_menubar() {
 
 	// Build the search menu.
 	menu = gtk_menu_new();
+	gtk_menu_set_accel_group(GTK_MENU(menu), accel_group);
 	menu_search = gtk_menu_item_new_with_label("Search");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_search), menu);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("_Find...");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_show_dialog_find), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_menu_item_new_with_label("Find Next");
+#else
+	item = gtk_menu_item_new_with_mnemonic("Find Next");
+#endif
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_KEY_g, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_editor_find_next), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND_AND_REPLACE,
 			accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Find and Replace");
+#endif
 	gtk_widget_add_accelerator(item, "activate", accel_group,
 			GDK_KEY_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(item), "activate",
@@ -187,8 +255,12 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	separator = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+#if GTK_MAJOR_VERSION == 2
 	menu_jump_page = gtk_image_menu_item_new_from_stock(GTK_STOCK_JUMP_TO,
 			accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("Jump To");
+#endif
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_jump_page), "Jump To Page...");
 	gtk_widget_add_accelerator(menu_jump_page, "activate", accel_group,
 			GDK_KEY_j, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
@@ -199,15 +271,24 @@ GtkWidget* initialize_menubar() {
 
 	// Build the view menu.
 	menu = gtk_menu_new();
+	gtk_menu_set_accel_group(GTK_MENU(menu), accel_group);
 	menu_view = gtk_menu_item_new_with_label("View");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_view), menu);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_INDEX, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Page Viewer");
+#else
+	item = gtk_menu_item_new_with_mnemonic("Page _Viewer");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_show_page_viewer), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT, NULL);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Page Editor");
+#else
+	item = gtk_menu_item_new_with_mnemonic("Page _Editor");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_show_page_editor), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -223,9 +304,14 @@ GtkWidget* initialize_menubar() {
 
 	// Build the help menu.
 	menu = gtk_menu_new();
+	gtk_menu_set_accel_group(GTK_MENU(menu), accel_group);
 	menu_help = gtk_menu_item_new_with_label("Help");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_help), menu);
+#if GTK_MAJOR_VERSION == 2
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, accel_group);
+#else
+	item = gtk_menu_item_new_with_mnemonic("About");
+#endif
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_show_about), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -240,6 +326,7 @@ GtkWidget* initialize_menubar() {
  * @return Toolbar widget populated and ready.
  */
 GtkWidget* initialize_toolbar() {
+#if GTK_MAJOR_VERSION == 2
 	GtkWidget *toolbar;
 	GtkToolItem *item;
 
@@ -303,6 +390,9 @@ GtkWidget* initialize_toolbar() {
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), item, -1);
 
 	return toolbar;
+#else
+	return NULL;
+#endif
 }
 
 /**
