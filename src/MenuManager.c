@@ -193,6 +193,26 @@ GtkWidget* initialize_menubar() {
 	menu = gtk_menu_new();
 	menu_view = gtk_menu_item_new_with_label("View");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_view), menu);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_INDEX, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Page Viewer");
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_show_page_viewer), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT, NULL);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Page Editor");
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_show_page_editor), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
+	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND_AND_REPLACE,
+			accel_group);
+	gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Toggle Page View");
+	gtk_widget_add_accelerator(item, "activate", accel_group,
+			GDK_d, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(item), "activate",
+			G_CALLBACK(on_toggle_notebook_page), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menu_view);
 
 	// Build the help menu.
@@ -206,13 +226,6 @@ GtkWidget* initialize_menubar() {
 
 // Menu items.
 GtkItemFactoryEntry menu_items[] = {
-	// Search.
-	{ "/_Search",                   NULL,             NULL,                          0, "<Branch>",     NULL },
-	{ "/Search/_Find...",           "<CTRL>F",        on_show_dialog_find,              0, "<StockItem>",  GTK_STOCK_FIND },
-	{ "/Search/Find _Next",         "<CTRL>G",        on_editor_find_next,              0, "<Item>",       NULL },
-	{ "/Search/_Replace...",        "<CTRL>H",        NULL,                          0, "<StockItem>",  GTK_STOCK_FIND_AND_REPLACE },
-	{ "/Search/sep1",               NULL,             NULL,                          0, "<Separator>",  NULL },
-	{ "/Search/Jump To Article...", "<CTRL>J",        NULL,                          0, "<StockItem>",  GTK_STOCK_JUMP_TO },
 	// View.
 	{ "/_View",                     NULL,             NULL,                          0, "<Branch>",     NULL },
 	{ "/View/Page _Viewer",         NULL,             on_show_page_viewer,              0, "<StockItem>",  GTK_STOCK_INDEX },
