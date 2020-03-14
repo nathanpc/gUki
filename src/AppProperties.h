@@ -9,6 +9,7 @@
 #define _APPPROPERTIES_H_
 
 #define APP_NAME      "gUki"
+#define APP_ICON      "text-editor"
 #define APP_VERSION   "1.0a"
 #define APP_COPYRIGHT "(c) Innove Workshop"
 #define APP_COMMENTS  "An application to manage Uki personal wikis."

@@ -43,6 +43,7 @@ void initialize_mainwindow() {
 	// Create window and setup parameters.
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), APP_NAME);
+	gtk_window_set_icon_name(GTK_WINDOW(window), APP_ICON);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_widget_set_size_request(window, 700, 500);
 	g_signal_connect(window, "delete_event", G_CALLBACK(on_window_delete), NULL);
