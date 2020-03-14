@@ -13,9 +13,6 @@
 #include "MainWindow.h"
 #include "Workspace.h"
 
-// Global variables.
-const char *wiki_root = "/home/nathan/dev/projects/uki/gUki/TestUki/";
-
 /**
  * Application's main entry point.
  *
@@ -27,9 +24,6 @@ int main(int argc, char **argv) {
 	// Initialize GTK and the main window.
 	gtk_init(&argc, &argv);
 	initialize_mainwindow();
-
-	// Open the workspace.
-	open_workspace(wiki_root);
 
 	// Enter the GTK main loop.
 	gtk_main();
