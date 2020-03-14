@@ -51,7 +51,11 @@ void initialize_mainwindow() {
 	initialize_dialogs(window);
 
 	// Add vertical container to place the menu bar.
+#if GTK_MAJOR_VERSION == 2
 	vbox = gtk_vbox_new(false, 1);
+#else
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 1);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 
@@ -63,7 +67,11 @@ void initialize_mainwindow() {
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, false, true, 0);
 
 	// Add a horizontal panel.
+#if GTK_MAJOR_VERSION == 2
 	hpaned = gtk_hpaned_new();
+#else
+	hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, true, true, 0);
 
 	// Initialize the tree view.

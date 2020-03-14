@@ -67,13 +67,26 @@ gint show_finder_dialog() {
 	// Create the find dialog and get its vertical box container.
 	dialog = gtk_dialog_new_with_buttons("Find", GTK_WINDOW(parent),
 										 GTK_DIALOG_DESTROY_WITH_PARENT,
+#if GTK_MAJOR_VERSION == 2
 										 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 										 GTK_STOCK_FIND, GTK_RESPONSE_OK,
+#else
+										 "Cancel", GTK_RESPONSE_CANCEL,
+										 "Find", GTK_RESPONSE_OK,
+#endif
 										 NULL);
+#if GTK_MAJOR_VERSION == 2
 	vbox = GTK_DIALOG(dialog)->vbox;
+#else
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#endif
 
 	// Create the horizontal container for the find label and entry box.
+#if GTK_MAJOR_VERSION == 2
 	hbox = gtk_hbox_new(false, 10);
+#else
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 1);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, false, false, 0);
 

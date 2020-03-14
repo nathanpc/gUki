@@ -73,7 +73,7 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(subitem), submenu);
 	menu_new_article = gtk_menu_item_new_with_label("Article...");
 	gtk_widget_add_accelerator(menu_new_article, "activate", accel_group,
-			GDK_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(menu_new_article), "activate",
 			G_CALLBACK(on_menu_new_page), (void*)(long)1);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menu_new_article);
@@ -129,13 +129,13 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_edit), menu);
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, accel_group);
 	gtk_widget_add_accelerator(item, "activate", accel_group,
-			GDK_z, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_z, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_undo),
 	//		NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, accel_group);
 	gtk_widget_add_accelerator(item, "activate", accel_group,
-			GDK_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_editor_redo),
 	//		NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -158,7 +158,7 @@ GtkWidget* initialize_menubar() {
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL,
 			accel_group);
 	gtk_widget_add_accelerator(item, "activate", accel_group,
-			GDK_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_editor_select_all), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -174,14 +174,14 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	item = gtk_menu_item_new_with_label("Find Next");
 	gtk_widget_add_accelerator(item, "activate", accel_group,
-			GDK_g, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_g, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_editor_find_next), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 	item = gtk_image_menu_item_new_from_stock(GTK_STOCK_FIND_AND_REPLACE,
 			accel_group);
 	gtk_widget_add_accelerator(item, "activate", accel_group,
-			GDK_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_h, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(item), "activate",
 	//		G_CALLBACK(on_show_dialog_find), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
@@ -191,7 +191,7 @@ GtkWidget* initialize_menubar() {
 			accel_group);
 	gtk_menu_item_set_label(GTK_MENU_ITEM(menu_jump_page), "Jump To Page...");
 	gtk_widget_add_accelerator(menu_jump_page, "activate", accel_group,
-			GDK_j, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_j, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	//g_signal_connect(G_OBJECT(menu_jump_page), "activate",
 	//		G_CALLBACK(on_jump_to_page), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_jump_page);
@@ -215,7 +215,7 @@ GtkWidget* initialize_menubar() {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
 	item = gtk_menu_item_new_with_label("Toggle Page View");
 	gtk_widget_add_accelerator(item, "activate", accel_group,
-			GDK_d, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+			GDK_KEY_d, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(item), "activate",
 			G_CALLBACK(on_toggle_notebook_page), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);

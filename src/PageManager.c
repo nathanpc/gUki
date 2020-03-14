@@ -6,7 +6,11 @@
  */
 
 #include <uki/uki.h>
+#if GTK_MAJOR_VERSION == 2
 #include <webkit/webkit.h>
+#else
+#include <webkit2/webkit2.h>
+#endif
 #include "PageManager.h"
 #include "DialogHelper.h"
 
@@ -245,16 +249,26 @@ void refresh_page_viewer() {
 
 		// Render the article.
 		uki_render_article_from_text(&contents, article.deepness);
+#if GTK_MAJOR_VERSION == 2
 		webkit_web_view_load_string(WEBKIT_WEB_VIEW(viewer), contents, NULL,
 									NULL, current_uri);
+#else
+		webkit_web_view_load_html(WEBKIT_WEB_VIEW(viewer), contents,
+				current_uri);
+#endif
 	} else {
 		// Get the template.
 		uki_template_t template = uki_template(current_template_i);
 
 		// Render the template.
 		uki_render_template_from_text(&contents, template.deepness);
+#if GTK_MAJOR_VERSION == 2
 		webkit_web_view_load_string(WEBKIT_WEB_VIEW(viewer), contents, NULL,
 									NULL, current_uri);
+#else
+		webkit_web_view_load_html(WEBKIT_WEB_VIEW(viewer), contents,
+				current_uri);
+#endif
 	}
 
 	// Free resources.
