@@ -534,6 +534,9 @@ void on_menu_new_page(GtkWidget *widget, gpointer data) {
 	// Save the new current page and reload the workspace.
 	save_current_page();
 	reload_workspace();
+
+	// Set the state of the widgets affected by the changes.
+	update_workspace_state_menu();
 }
 
 /**
