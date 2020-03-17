@@ -29,11 +29,6 @@ include_directories(${GTK_INCLUDE_DIRS} ${WEBKIT_INCLUDE_DIRS})
 # Setup the files.
 file(GLOB SOURCES "src/*.c")
 
-# Setup link and include paths.
-set(LIBUKI_DIST_DIR ${CMAKE_SOURCE_DIR}/../libuki/build/dist)
-include_directories(${LIBUKI_DIST_DIR}/include)
-link_directories(${LIBUKI_DIST_DIR}/lib)
-
 # Build our executable.
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} libuki.so ${CMAKE_THREAD_LIBS_INIT}
